@@ -1,0 +1,107 @@
+/* Carro tanque DOT-117 · tema claro con colores de materiales reales */
+.ct { --ct-accent: #1d63c9; margin: 0; }
+.ct .iso-plate { padding: 44px 16px 20px; }
+.ct-stage { position: relative; touch-action: pan-y; outline: none; }
+.ct-stage:focus-visible { outline: 1px solid var(--anatomy-muted); outline-offset: 6px; }
+.ct-stage > svg { width: 100%; height: auto; display: block; }
+.ct-stage > svg + svg { position: absolute; inset: 0; }
+.ct-car .it { transition: opacity 320ms ease; }
+
+/* Resortes: alambre de acero */
+.coil-back, .coil-front { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.coil-back { stroke: #4b4440; stroke-width: 1.1px; }
+.coil-front { stroke: #2b2522; stroke-width: 1.5px; }
+
+/* Materiales: cada uno redefine los tonos del kit */
+[data-mat] { --anatomy-dot: #2e2a27; }
+[data-mat="acero"] { --anatomy-paper:#66625e; --anatomy-face:#74706b; --anatomy-top:#8a847e; --anatomy-shade-0:#4c4845; --anatomy-shade-1:#55514d; --anatomy-shade-2:#5e5a56; --anatomy-shade-3:#68635f; --anatomy-hi:#211e1c; --anatomy-mid:#3b3633; --anatomy-lo:#8b847d; --anatomy-faint:#7a736d; }
+[data-mat="bogie"] { --anatomy-paper:#5b524c; --anatomy-face:#665c55; --anatomy-top:#7a6a5d; --anatomy-shade-0:#3f3833; --anatomy-shade-1:#4a413b; --anatomy-shade-2:#544a43; --anatomy-shade-3:#5e534b; --anatomy-hi:#1d1916; --anatomy-mid:#342d29; --anatomy-lo:#8a6b55; --anatomy-faint:#79604e; --anatomy-dot:#8f4f2c; }
+[data-mat="rueda"] { --anatomy-paper:#6d6a67; --anatomy-face:#7a7774; --anatomy-top:#9a9693; --anatomy-shade-0:#4e4b49; --anatomy-shade-1:#5a5754; --anatomy-shade-2:#66625f; --anatomy-shade-3:#75716d; --anatomy-hi:#1e1c1b; --anatomy-mid:#3a3735; --anatomy-lo:#94877a; --anatomy-faint:#857a70; --anatomy-dot:#2e2a27; }
+[data-mat="rodamiento"] { --anatomy-paper:#8a8c8e; --anatomy-face:#9a9c9e; --anatomy-top:#b6b8ba; --anatomy-shade-0:#686a6c; --anatomy-shade-1:#75777a; --anatomy-shade-2:#818386; --anatomy-shade-3:#8e9093; --anatomy-hi:#24262a; --anatomy-mid:#45474b; --anatomy-lo:#5e6064; --anatomy-faint:#6f7175; }
+[data-mat="resorte"] { --anatomy-mid:#3b3633; }
+[data-mat="goma"] { --anatomy-paper:#3a3836; --anatomy-face:#44413f; --anatomy-top:#555250; --anatomy-shade-0:#262423; --anatomy-shade-1:#2d2b2a; --anatomy-shade-2:#343231; --anatomy-shade-3:#3b3938; --anatomy-hi:#121111; --anatomy-mid:#1e1d1c; --anatomy-lo:#6a6663; --anatomy-faint:#5b5855; }
+[data-mat="zapata"] { --anatomy-paper:#4a4746; --anatomy-face:#55524f; --anatomy-top:#6a6662; --anatomy-shade-0:#33302f; --anatomy-shade-1:#3b3837; --anatomy-shade-2:#43403e; --anatomy-shade-3:#4b4846; --anatomy-hi:#151313; --anatomy-mid:#2a2827; --anatomy-lo:#7a756f; --anatomy-faint:#6a655f; }
+[data-mat="cilindro"] { --anatomy-paper:#4d5257; --anatomy-face:#585e63; --anatomy-top:#6e757b; --anatomy-shade-0:#363a3e; --anatomy-shade-1:#3e4347; --anatomy-shade-2:#474c51; --anatomy-shade-3:#50555a; --anatomy-hi:#16181a; --anatomy-mid:#2c3033; --anatomy-lo:#7d848a; --anatomy-faint:#6b7177; }
+[data-mat="riel"] { --anatomy-paper:#7c7570; --anatomy-face:#8a837e; --anatomy-top:#c4c1be; --anatomy-shade-0:#5a524c; --anatomy-shade-1:#655c56; --anatomy-shade-2:#70665f; --anatomy-shade-3:#7b7069; --anatomy-hi:#2a2522; --anatomy-mid:#4a423d; --anatomy-lo:#8f857d; --anatomy-faint:#857b74; }
+[data-mat="durmiente"] { --anatomy-paper:#b9b4ab; --anatomy-face:#c4bfb6; --anatomy-top:#cdc8bf; --anatomy-shade-0:#9e988e; --anatomy-shade-1:#a7a197; --anatomy-shade-2:#b0aaa0; --anatomy-shade-3:#b8b2a8; --anatomy-hi:#6f6a62; --anatomy-mid:#5a554e; --anatomy-lo:#a39d93; --anatomy-faint:#aea89e; --anatomy-dot:#3b3631; }
+[data-mat="balasto"] { --anatomy-paper:#a9a49c; --anatomy-face:#b3aea6; --anatomy-top:#bcb7af; --anatomy-shade-0:#958f86; --anatomy-shade-1:#9b958c; --anatomy-shade-2:#a19b92; --anatomy-shade-3:#a7a198; --anatomy-hi:#8c867d; --anatomy-mid:#6f695f; --anatomy-lo:#9a948a; --anatomy-faint:#a19b91; --anatomy-dot:#5d574e; }
+[data-mat="negro"] { --anatomy-paper:#1e1f21; --anatomy-face:#38393c; --anatomy-top:#55575b; --anatomy-shade-0:#1d1e20; --anatomy-shade-1:#242527; --anatomy-shade-2:#2b2c2f; --anatomy-shade-3:#34353a; --anatomy-hi:#0b0b0c; --anatomy-mid:#5d5f63; --anatomy-lo:#4a4c50; --anatomy-faint:#43454a; --anatomy-dot:#6e7075; }
+[data-mat="aislante"] { --anatomy-paper:#e7dcbc; --anatomy-face:#efe6c9; --anatomy-top:#f6efd8; --anatomy-shade-0:#cfc19a; --anatomy-shade-1:#d8cba6; --anatomy-shade-2:#e0d4b1; --anatomy-shade-3:#e7dcbd; --anatomy-hi:#6e6143; --anatomy-mid:#8f8160; --anatomy-lo:#b9aa84; --anatomy-faint:#c9bb95; }
+[data-mat="primer"] { --anatomy-paper:#8f8278; --anatomy-face:#9a8d83; --anatomy-top:#b1a59b; --anatomy-shade-0:#6f635b; --anatomy-shade-1:#7a6e65; --anatomy-shade-2:#857970; --anatomy-shade-3:#90847b; --anatomy-hi:#2e2722; --anatomy-mid:#4d433c; --anatomy-lo:#6b5f56; --anatomy-faint:#7b6f66; }
+.it[data-x1] { display: none; }
+[data-mat="amarillo"] { --anatomy-paper:#e2b11f; --anatomy-face:#ecbe2c; --anatomy-top:#f6d256; --anatomy-shade-0:#b98a0e; --anatomy-shade-1:#c89810; --anatomy-shade-2:#d5a515; --anatomy-shade-3:#e0b01c; --anatomy-hi:#5a4304; --anatomy-mid:#8a6a0a; --anatomy-lo:#a27c0b; --anatomy-faint:#b48b0f; --anatomy-dot:#5a4304; }
+[data-mat="bronce"] { --anatomy-paper:#a8823f; --anatomy-face:#b58f4b; --anatomy-top:#d1ab64; --anatomy-shade-0:#7e5f28; --anatomy-shade-1:#8c6a2f; --anatomy-shade-2:#9a7636; --anatomy-shade-3:#a6823e; --anatomy-hi:#3d2c0c; --anatomy-mid:#5f4618; --anatomy-lo:#7a5b22; --anatomy-faint:#8d6c2d; --anatomy-dot:#3d2c0c; }
+[data-mat="inox"] { --anatomy-paper:#a9adb1; --anatomy-face:#b8bcc0; --anatomy-top:#d6d9dc; --anatomy-shade-0:#83888d; --anatomy-shade-1:#90959a; --anatomy-shade-2:#9da2a7; --anatomy-shade-3:#aaafb3; --anatomy-hi:#2f3337; --anatomy-mid:#565b60; --anatomy-lo:#73787d; --anatomy-faint:#868b90; }
+[data-mat="acoplador"] { --anatomy-paper:#4f4945; --anatomy-face:#5a534e; --anatomy-top:#6d645d; --anatomy-shade-0:#37322f; --anatomy-shade-1:#403a36; --anatomy-shade-2:#48423e; --anatomy-shade-3:#514a45; --anatomy-hi:#171412; --anatomy-mid:#2e2926; --anatomy-lo:#7e6a5a; --anatomy-faint:#6e5d50; --anatomy-dot:#8f4f2c; }
+[data-mat="aparato"] { --anatomy-paper:#56606a; --anatomy-face:#626c76; --anatomy-top:#77828c; --anatomy-shade-0:#3d454d; --anatomy-shade-1:#454e56; --anatomy-shade-2:#4e5760; --anatomy-shade-3:#57616a; --anatomy-hi:#191d21; --anatomy-mid:#30363c; --anatomy-lo:#6e7983; --anatomy-faint:#636e78; }
+[data-mat="rejilla"] { --anatomy-paper:#9da1a4; --anatomy-face:#a9adb0; --anatomy-top:#b9bdc0; --anatomy-shade-0:#7c8083; --anatomy-shade-1:#878b8e; --anatomy-shade-2:#929699; --anatomy-shade-3:#9da1a4; --anatomy-hi:#34383b; --anatomy-mid:#555a5e; --anatomy-lo:#5f6468; --anatomy-faint:#7a7f83; --anatomy-dot:#2b2f32; }
+[data-mat="placa"] { --anatomy-paper:#d8d6d0; --anatomy-face:#e2e0da; --anatomy-top:#ecebe6; --anatomy-shade-0:#b9b6af; --anatomy-shade-1:#c4c1ba; --anatomy-shade-2:#cecbc5; --anatomy-shade-3:#d8d6d0; --anatomy-hi:#55524c; --anatomy-mid:#7a766f; --anatomy-lo:#a29e97; --anatomy-faint:#b3afa8; }
+.placard .pl-red { fill: #c8231b; stroke: #6d1410; stroke-width: 0.6px; vector-effect: non-scaling-stroke; }
+.placard .pl-rim { fill: none; stroke: #ffffff; stroke-width: 0.8px; vector-effect: non-scaling-stroke; }
+.placard .pl-white { fill: #ffffff; }
+.placard .pl-panel { fill: #ffffff; stroke: #1a1a1a; stroke-width: 0.5px; vector-effect: non-scaling-stroke; }
+.placard .pl-num { font: 700 2.5px/1 ui-sans-serif, system-ui, sans-serif; fill: #111; letter-spacing: 0.04px; }
+.placard .pl-cls { font: 700 2.3px/1 ui-sans-serif, system-ui, sans-serif; fill: #fff; }
+
+/* Página */
+.iso-page { margin: 28px auto 72px; }
+.ct-head { margin: 0 0 18px; }
+.ct-eyebrow { margin: 0 0 6px; font: 500 12px/1.4 var(--anatomy-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--anatomy-muted); }
+.ct-head h1 { margin: 0 0 8px; font-size: clamp(22px, 3.2vw, 32px); line-height: 1.15; letter-spacing: -0.01em; color: var(--anatomy-strong); }
+.ct-lede { margin: 0; max-width: 820px; color: var(--anatomy-text); font-size: 15px; }
+.ct-bar { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin: 0 0 6px; position: relative; z-index: 2; }
+.ct-mode, .ct-steps button { font: 500 13px/1 ui-sans-serif, system-ui, sans-serif; padding: 8px 12px; border-radius: 8px; border: 1px solid #d6d4cd; background: #fff; color: var(--anatomy-strong); cursor: pointer; }
+.ct-mode[aria-pressed="true"] { background: #1b2027; border-color: #1b2027; color: #fff; }
+.ct-mode:focus-visible, .ct-asm:focus-visible, .ct-steps button:focus-visible { outline: 2px solid var(--ct-accent); outline-offset: 2px; }
+.ct-steps { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: space-between; margin-top: 10px; padding: 10px 12px; border: 1px solid #e3e1da; border-radius: 10px; background: #fff; }
+.ct-steps[hidden] { display: none; }
+.ct-step-label { margin: 0; font-weight: 600; color: var(--anatomy-strong); }
+.ct-step-line { margin: 2px 0 0; color: var(--anatomy-text); max-width: 760px; }
+.ct-step-ctl { display: flex; gap: 6px; }
+.ct-steps button:disabled { opacity: .4; cursor: default; }
+.ct-live { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.ct-below { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 14px; margin-top: 14px; }
+.ct-asms ol { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.ct-asm { width: 100%; display: grid; grid-template-columns: auto 1fr auto; grid-template-rows: auto auto; column-gap: 10px; align-items: baseline; text-align: left; padding: 9px 11px; border-radius: 10px; border: 1px solid #e3e1da; background: #fff; cursor: pointer; font: inherit; color: var(--anatomy-text); }
+.ct-asm:hover { border-color: #b9b6ad; }
+.ct-asm[aria-pressed="true"] { border-color: var(--ct-accent); box-shadow: inset 0 0 0 1px var(--ct-accent); }
+.ct-num { grid-row: span 2; font: 600 12px/1 var(--anatomy-mono); color: var(--anatomy-muted); }
+.ct-asm-es { font-weight: 600; color: var(--anatomy-strong); }
+.ct-asm-n { grid-row: span 2; font: 11px/1 var(--anatomy-mono); color: var(--anatomy-muted); align-self: center; }
+.ct-asm-en { font: 12px/1.3 var(--anatomy-mono); color: var(--anatomy-muted); }
+.ct-info { padding: 12px 14px; border-radius: 10px; border: 1px solid #e3e1da; background: #fff; min-height: 148px; }
+.ct-info p { margin: 0 0 6px; }
+.ct-info-asm { font: 500 11.5px/1.3 var(--anatomy-mono); letter-spacing: .05em; text-transform: uppercase; color: var(--anatomy-muted); }
+.ct-info-name { margin: 0 0 8px; font-size: 17px; line-height: 1.25; color: var(--anatomy-strong); }
+.ct-info-name span { font: 400 13px/1.3 var(--anatomy-mono); color: var(--anatomy-muted); }
+.ct-info dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; }
+.ct-info dt { font: 600 12px/1.5 var(--anatomy-mono); color: var(--anatomy-muted); }
+.ct-info dd { margin: 0; }
+.ct-caption { margin-top: 18px; color: var(--anatomy-text); font-size: 13px; }
+.ct-caption p { max-width: 980px; margin: 0 0 10px; }
+.ct-caption a { color: var(--ct-accent); }
+.ct-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.ct-table th, .ct-table td { text-align: left; padding: 5px 8px; border-top: 1px solid #e6e4dd; vertical-align: top; }
+.ct-table thead th { font: 600 11px/1.3 var(--anatomy-mono); text-transform: uppercase; letter-spacing: .05em; color: var(--anatomy-muted); }
+.ct-table tbody th { font-weight: 500; color: var(--anatomy-strong); }
+@media (max-width: 760px) {
+  .ct-below { grid-template-columns: 1fr; }
+  .ct-asms ol { grid-template-columns: 1fr; }
+  .ct .iso-plate { padding: 40px 8px 16px; }
+  .ct-table thead { display: none; }
+  .ct-table tr { display: grid; grid-template-columns: 1fr; padding: 6px 0; border-top: 1px solid #e6e4dd; }
+  .ct-table th, .ct-table td { border: 0; padding: 1px 0; }
+}
+
+/* Resaltado, atenuado y transiciones */
+.it[data-off] { opacity: 0; pointer-events: none; }
+.ct-car[data-swap] .it { opacity: 0; transition: opacity 220ms ease; }
+.ct-car[data-hover] .it:not([data-hot]):not([data-off]) { opacity: .42; }
+.it[data-hot] .iso-edge { stroke: var(--ct-accent); stroke-width: 1.3px; }
+.it[data-hot] { filter: drop-shadow(0 0 2px rgba(29, 99, 201, .55)); }
+.ct-car .it { cursor: pointer; }
+.ct-car .it[data-a="via"] { cursor: default; }
+@media (prefers-reduced-motion: reduce) { .ct-car .it { transition: none; } }
+.ct-stage { overflow: hidden; }
+.ct-back { transition: opacity 320ms ease; }
+.ct-stage[data-l2] .ct-back { opacity: 0; }
