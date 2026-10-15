@@ -26,9 +26,9 @@
 [data-mat="durmiente"] { --anatomy-paper:#b9b4ab; --anatomy-face:#c4bfb6; --anatomy-top:#cdc8bf; --anatomy-shade-0:#9e988e; --anatomy-shade-1:#a7a197; --anatomy-shade-2:#b0aaa0; --anatomy-shade-3:#b8b2a8; --anatomy-hi:#6f6a62; --anatomy-mid:#5a554e; --anatomy-lo:#a39d93; --anatomy-faint:#aea89e; --anatomy-dot:#3b3631; }
 [data-mat="balasto"] { --anatomy-paper:#a9a49c; --anatomy-face:#b3aea6; --anatomy-top:#bcb7af; --anatomy-shade-0:#958f86; --anatomy-shade-1:#9b958c; --anatomy-shade-2:#a19b92; --anatomy-shade-3:#a7a198; --anatomy-hi:#8c867d; --anatomy-mid:#6f695f; --anatomy-lo:#9a948a; --anatomy-faint:#a19b91; --anatomy-dot:#5d574e; }
 [data-mat="negro"] { --anatomy-paper:#1e1f21; --anatomy-face:#38393c; --anatomy-top:#55575b; --anatomy-shade-0:#1d1e20; --anatomy-shade-1:#242527; --anatomy-shade-2:#2b2c2f; --anatomy-shade-3:#34353a; --anatomy-hi:#0b0b0c; --anatomy-mid:#5d5f63; --anatomy-lo:#4a4c50; --anatomy-faint:#43454a; --anatomy-dot:#6e7075; }
-[data-mat="aislante"] { --anatomy-paper:#e7dcbc; --anatomy-face:#efe6c9; --anatomy-top:#f6efd8; --anatomy-shade-0:#cfc19a; --anatomy-shade-1:#d8cba6; --anatomy-shade-2:#e0d4b1; --anatomy-shade-3:#e7dcbd; --anatomy-hi:#6e6143; --anatomy-mid:#8f8160; --anatomy-lo:#b9aa84; --anatomy-faint:#c9bb95; }
-[data-mat="primer"] { --anatomy-paper:#8f8278; --anatomy-face:#9a8d83; --anatomy-top:#b1a59b; --anatomy-shade-0:#6f635b; --anatomy-shade-1:#7a6e65; --anatomy-shade-2:#857970; --anatomy-shade-3:#90847b; --anatomy-hi:#2e2722; --anatomy-mid:#4d433c; --anatomy-lo:#6b5f56; --anatomy-faint:#7b6f66; }
-.it[data-x1] { display: none; }
+[data-mat="aislante"] { --anatomy-paper:#cfc19a; --anatomy-face:#efe6c9; --anatomy-top:#f6efd8; --anatomy-shade-0:#cfc19a; --anatomy-shade-1:#d8cba6; --anatomy-shade-2:#e0d4b1; --anatomy-shade-3:#e7dcbd; --anatomy-hi:#6e6143; --anatomy-mid:#8f8160; --anatomy-lo:#b9aa84; --anatomy-faint:#c9bb95; }
+[data-mat="primer"] { --anatomy-paper:#6f635b; --anatomy-face:#9a8d83; --anatomy-top:#b1a59b; --anatomy-shade-0:#6f635b; --anatomy-shade-1:#7a6e65; --anatomy-shade-2:#857970; --anatomy-shade-3:#90847b; --anatomy-hi:#2e2722; --anatomy-mid:#4d433c; --anatomy-lo:#6b5f56; --anatomy-faint:#7b6f66; }
+
 [data-mat="amarillo"] { --anatomy-paper:#e2b11f; --anatomy-face:#ecbe2c; --anatomy-top:#f6d256; --anatomy-shade-0:#b98a0e; --anatomy-shade-1:#c89810; --anatomy-shade-2:#d5a515; --anatomy-shade-3:#e0b01c; --anatomy-hi:#5a4304; --anatomy-mid:#8a6a0a; --anatomy-lo:#a27c0b; --anatomy-faint:#b48b0f; --anatomy-dot:#5a4304; }
 [data-mat="bronce"] { --anatomy-paper:#a8823f; --anatomy-face:#b58f4b; --anatomy-top:#d1ab64; --anatomy-shade-0:#7e5f28; --anatomy-shade-1:#8c6a2f; --anatomy-shade-2:#9a7636; --anatomy-shade-3:#a6823e; --anatomy-hi:#3d2c0c; --anatomy-mid:#5f4618; --anatomy-lo:#7a5b22; --anatomy-faint:#8d6c2d; --anatomy-dot:#3d2c0c; }
 [data-mat="inox"] { --anatomy-paper:#a9adb1; --anatomy-face:#b8bcc0; --anatomy-top:#d6d9dc; --anatomy-shade-0:#83888d; --anatomy-shade-1:#90959a; --anatomy-shade-2:#9da2a7; --anatomy-shade-3:#aaafb3; --anatomy-hi:#2f3337; --anatomy-mid:#565b60; --anatomy-lo:#73787d; --anatomy-faint:#868b90; }
@@ -105,3 +105,32 @@
 .ct-stage { overflow: hidden; }
 .ct-back { transition: opacity 320ms ease; }
 .ct-stage[data-l2] .ct-back { opacity: 0; }
+
+/* Corte longitudinal */
+.cx-inner .cx-fill { fill: #74675d; }
+.cx-inner .cx-tone[data-t="0"] { fill: #54493f; }
+.cx-inner .cx-tone[data-t="1"] { fill: #5f5349; }
+.cx-inner .cx-tone[data-t="2"] { fill: #6b5e54; }
+.cx-inner .cx-tone[data-t="3"] { fill: #786b60; }
+.cx-inner .cx-tone[data-t="4"] { fill: #85786d; }
+.cx-liquid-top { fill: #d3a646; fill-opacity: .9; stroke: #8a6418; stroke-width: .6px; vector-effect: non-scaling-stroke; }
+.cx-glint { fill: none; stroke: #fff3d0; stroke-opacity: .75; stroke-width: .8px; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.cx-liquid { fill: #b9862a; stroke: #7a5714; stroke-width: .5px; vector-effect: non-scaling-stroke; }
+.cx-sec { stroke: #121212; stroke-width: .4px; vector-effect: non-scaling-stroke; stroke-linejoin: round; }
+.cx-shell { fill: #6d5546; }
+.cx-insul { fill: #f1e3b6; }
+.cx-jacket { fill: #1d1e20; }
+.cx-shield { fill: #2c2d30; }
+.cx-steel { fill: #6c6660; }
+.cx-hole { fill: #b9862a; stroke: #121212; stroke-width: .4px; vector-effect: non-scaling-stroke; }
+.dl-svg { display: block; width: 100%; height: auto; margin: 8px 0 4px; background: #fbfbfa; border: 1px solid #ecebe6; border-radius: 8px; }
+.dl-vapor { fill: #9a8e84; }
+.dl-liquid { fill: #c99632; }
+.dl-bolt { fill: #9c9fa3; }
+.dl-pipe { fill: #77716b; }
+.dl-valve { fill: #5b6168; }
+.dl-lead { fill: none; stroke: #2b2b2b; stroke-width: .8px; }
+.dl-dot { fill: #2b2b2b; }
+.dl-t { font: 600 10.5px/1 ui-sans-serif, system-ui, sans-serif; fill: #1b1b1d; paint-order: stroke; stroke: #fbfbfa; stroke-width: 3px; }
+.dl-en { font: 9px/1 ui-monospace, Menlo, monospace; fill: #6b6b70; paint-order: stroke; stroke: #fbfbfa; stroke-width: 3px; }
+.dl-cap { font: 600 10px/1 ui-sans-serif, system-ui, sans-serif; fill: #4a3508; }

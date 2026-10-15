@@ -102,3 +102,5 @@ Object.assign(TIPOS, {
   estribo: { es: "Estribo", en: "sill step", fn: "Peldaño bajo el costado para subir al carro desde el suelo.", mat: "Acero pintado amarillo" },
   placa: { es: "Placa con número ONU", en: "UN placard holder", fn: "Rombo de clase 3 (líquido inflamable) con el número ONU del producto; aquí 1993, genérico de combustible (1202 diésel, 1203 gasolina).", mat: "Acero / aluminio con lámina reflectiva" },
 });
+
+TIPOS.corte = { es: "Corte longitudinal del tanque", en: "longitudinal section", fn: "Plano vertical por el eje: de afuera hacia adentro, chaqueta (3 mm), aislamiento (13 mm) y virola (14.3 mm); abajo el sumidero con la brida de la válvula inferior, arriba la boquilla de la entrada de hombre y, adentro, el tubo buzo y el diésel con un llenado típico.", mat: "Acero TC-128B, fibra cerámica, acero A1011" };

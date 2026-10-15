@@ -10,6 +10,7 @@ import * as A from "../.claude/skills/anatomy/kit/audit.mjs";
 import { tubePieces, tubeSvg, crossingsOf } from "../.claude/skills/anatomy/kit/tube.mjs";
 import { kitScript } from "../.claude/skills/anatomy/scripts/inline-kit.mjs";
 import { ENSAMBLES, TIPOS } from "./catalogo.mjs";
+import { detalleHtml } from "./detalle.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const AUDIT = process.argv.includes("--audit");
@@ -69,8 +70,8 @@ const ZAX = (o) => G.frameOf(o, [0, 0, 1], [1, 0, 0], [0, 1, 0]);
 // Ensambles, resortes del despiece y piezas
 // Nivel 1: cada ensamble (o mitad de ensamble) tiene un resorte y un vector.
 const MOVE = {
-  enganA: [-36, 0, -24],
-  enganB: [36, 0, -24],
+  enganA: [-60, 0, 0],
+  enganB: [60, 0, 0],
   segN: [0, 92, 30],
   segF: [0, -92, 30],
   segTop: [0, 0, 196],
@@ -124,6 +125,7 @@ function pipe(pid, points, r, { tone = "hi", gaps = [], maxLength = 22, owner, t
 function multi(pid, subs, { bias = 0, ride } = {}) {
   const list = [...subs].sort((a, b) => k.depthOf(a.at, P) - k.depthOf(b.at, P));
   const c = list.reduce((acc, s) => G.add3(acc, s.at), [0, 0, 0]).map((v) => v / list.length);
+  for (const s of list) s.shape.owner = s.shape.owner ?? pid;
   put(pid, c, list.map((s) => s.svg).join(""), list.map((s) => s.shape), { bias, ride });
 }
 const sBox = ([x0, y0, z0], [x1, y1, z1], { tone = "hi", bevel = 0, extra = "", owner } = {}) => {
@@ -270,16 +272,17 @@ function truck(tag, X0) {
   const fl2 = end === "B";
   for (const bm of ["0", "1"]) {
     const sx = bm === "0" ? -1 : 1;
-    part(fb(`viga${bm}`), "vigaFreno", { asm: "frenos", spring, l2: fl2, v2: [sx * 14, 0, 30], mat: "acero" });
-    part(fb(`palanca${bm}`), "palanca", { asm: "frenos", spring, l2: fl2, v2: [sx * 6, 0, 40], mat: "acero" });
-    for (const sd of ["N", "F"]) {
-      part(fb(`cabeza${bm}${sd}`), "cabezaFreno", { asm: "frenos", spring, l2: fl2, v2: [sx * 14, 0, 30], mat: "acero" });
-      part(fb(`zapata${bm}${sd}`), "zapata", { asm: "frenos", spring, l2: fl2, v2: [sx * 22, 0, 30], mat: "zapata" });
+    // en el despiece de frenos las piezas del bogíe bajan o se abren hacia afuera: arriba pasa la tubería general
+    part(fb(`viga${bm}`), "vigaFreno", { asm: "frenos", spring, l2: fl2, v2: [0, 0, -22], mat: "acero" });
+    part(fb(`palanca${bm}`), "palanca", { asm: "frenos", spring, l2: fl2, v2: [-sx * 6, 0, -12], mat: "acero" });
+    for (const [sd, s] of [["N", 1], ["F", -1]]) {
+      part(fb(`cabeza${bm}${sd}`), "cabezaFreno", { asm: "frenos", spring, l2: fl2, v2: [0, s * 10, 0], mat: "acero" });
+      part(fb(`zapata${bm}${sd}`), "zapata", { asm: "frenos", spring, l2: fl2, v2: [sx * 12, 0, 0], mat: "zapata" });
     }
   }
-  part(fb("varilla"), "timoneria", { asm: "frenos", spring, l2: fl2, v2: [0, 0, 18], mat: "acero" });
-  part(fb("ajustador"), "ajustador", { asm: "frenos", spring, l2: fl2, v2: [0, 0, 22], mat: "acero" });
-  part(fb("cilindro"), "cilindro", { asm: "frenos", spring, l2: fl2, v2: [16, 0, 30], mat: "cilindro" });
+  part(fb("varilla"), "timoneria", { asm: "frenos", spring, l2: fl2, v2: [0, 0, -30], mat: "acero" });
+  part(fb("ajustador"), "ajustador", { asm: "frenos", spring, l2: fl2, v2: [0, 0, -30], mat: "acero" });
+  part(fb("cilindro"), "cilindro", { asm: "frenos", spring, l2: fl2, v2: [16, 0, 0], mat: "cilindro" });
 
   // Ejes montados
   for (const [ax, dx] of [["0", -AXLE], ["1", AXLE]]) {
@@ -423,8 +426,9 @@ for (const [end, sx] of [["A", -1], ["B", 1]]) {
   }
   // cara de choque (striker): barra superior y dos mejillas; abajo queda abierta para el vástago del acoplador
   const [kx0, kx1] = span(SILL.x1, SILL.x1 + 3);
-  box(sill, [kx0, -13, 38.6], [kx1, 13, SILL.top], { tone: "hi", owner, bevel: 0.4 });
-  for (const s of [-1, 1]) box(sill, [kx0, s > 0 ? 7.6 : -12, SILL.bottom], [kx1, s > 0 ? 12 : -7.6, 38.6], { tone: "hi", owner });
+  // la boca de la cara de choque deja salir recto al aparato de choque y al yugo
+  box(sill, [kx0, -13, 42.2], [kx1, 13, SILL.top], { tone: "hi", owner, bevel: 0.4 });
+  for (const s of [-1, 1]) box(sill, [kx0, s > 0 ? 7.6 : -12, SILL.bottom], [kx1, s > 0 ? 12 : -7.6, 42.2], { tone: "hi", owner });
   // relleno central entre almas sobre la placa central
   const bx = span(TRUCK_X - BOLSTER_HALF, TRUCK_X + BOLSTER_HALF);
   box(filler, [bx[0], -SILL.web[0], SILL.bottom], [bx[1], SILL.web[0], SILL.plate], { tone: "mid" });
@@ -574,13 +578,16 @@ const ABOVE = () => A.orientedBox(G.add3([0, 0, C], G.mul3(SPLIT_N, 200)), [[1, 
 
   // escudos de cabezal de altura completa, 1/2 in sobre la chaqueta
   const SHIELD = hull(RJ + M.headShield, RJ / 2 + M.headShield);
+  const SHIELD_EDGE = 6;
   for (const [end, sx] of [["A", -1], ["B", 1]]) {
-    const prof = profileOf(SHIELD, sx < 0 ? -SHIELD.tip : CYL, sx < 0 ? -CYL : SHIELD.tip, 26);
-    const paths = G.solidOf(profileOf(SHIELD, sx < 0 ? -SHIELD.tip : CYL, sx < 0 ? -CYL : SHIELD.tip, 60), TF, P, { smooth: { slope: SHIELD.slope, rows: 8 } });
+    // el borde del escudo queda 150 mm dentro del cabezal: no asoma sobre la silueta de la chaqueta
+    const E0 = CYL + SHIELD_EDGE;
+    const prof = profileOf(SHIELD, sx < 0 ? -SHIELD.tip : E0, sx < 0 ? -E0 : SHIELD.tip, 26);
+    const paths = G.solidOf(profileOf(SHIELD, sx < 0 ? -SHIELD.tip : E0, sx < 0 ? -E0 : SHIELD.tip, 60), TF, P, { smooth: { slope: SHIELD.slope, rows: 8 } });
     const outerP = prof.map(([s, r]) => [s, r]);
-    const innerP = profileOf(JACKET, sx < 0 ? -JACKET.tip : CYL, sx < 0 ? -CYL : JACKET.tip, 26).map(([s, r]) => [s, r]).reverse();
+    const innerP = profileOf(JACKET, sx < 0 ? -JACKET.tip : E0, sx < 0 ? -E0 : JACKET.tip, 26).map(([s, r]) => [s, r]).reverse();
     const poly = sx > 0 ? [...outerP, [SHIELD.tip, 0], [JACKET.tip, 0], ...innerP.slice(1)] : [[-JACKET.tip, 0], [-SHIELD.tip, 0], ...outerP.slice(1), ...innerP.slice(0, -1)];
-    const lip = Ln(G.arcOf(TF, sx * (CYL + 3), SHIELD.radius(CYL + 3), P, { slope: SHIELD.slope(sx * (CYL + 3)) }), { tone: "lo" });
+    const lip = Ln(G.arcOf(TF, sx * (E0 + 2), SHIELD.radius(E0 + 2), P, { slope: SHIELD.slope(sx * (E0 + 2)) }), { tone: "lo" });
     put(`t.escudo${end}`, [sx * (CYL + 20), 0, C], S(paths, { tone: "hi", inner: lip }), [A.body(TF, poly, { owner })], { bias: 1.2 });
   }
 
@@ -628,16 +635,16 @@ const SADDLE_F = G.frameOf([0, 0, C], [0, 0, 1], [0, 1, 0], [1, 0, 0]);
 }
 {
   const asm = "accesorios";
-  part("a.tapaCaja", "tapaCaja", { asm, v2: [0, 0, 52], mat: "negro" });
-  part("a.caja", "caja", { asm, v2: [0, 0, 36], mat: "negro" });
+  part("a.tapaCaja", "tapaCaja", { asm, v2: [0, 0, 96], mat: "negro" });
+  part("a.caja", "caja", { asm, v2: [0, 0, 70], mat: "negro" });
   part("a.tapa", "tapaManway", { asm, mat: "acero" });
-  part("a.tornillos", "tornillos", { asm, v2: [0, 0, 16], mat: "rodamiento" });
-  part("a.prd", "prd", { asm, v2: [-16, 8, 20], mat: "inox" });
-  part("a.vacio", "vacio", { asm, v2: [-14, -14, 14], mat: "inox" });
-  part("a.liquido", "valvulaLiquido", { asm, v2: [18, 6, 18], mat: "bronce" });
-  part("a.vapor", "valvulaVapor", { asm, v2: [16, -16, 12], mat: "bronce" });
+  part("a.tornillos", "tornillos", { asm, v2: [0, 0, 10], mat: "rodamiento" });
+  part("a.prd", "prd", { asm, v2: [-4, 3, 34], mat: "inox" });
+  part("a.vacio", "vacio", { asm, v2: [-4, -4, 24], mat: "inox" });
+  part("a.liquido", "valvulaLiquido", { asm, v2: [6, 2, 30], mat: "bronce" });
+  part("a.vapor", "valvulaVapor", { asm, v2: [3, -4, 20], mat: "bronce" });
   part("a.buzo", "tuboBuzo", { asm, l1: false, ride2: "a.tapa", mat: "acero" });
-  L2.accesorios = { anchor: "a.tapa", order: ["a.tapaCaja", "a.caja", "a.tornillos", "a.prd", "a.vacio", "a.liquido", "a.vapor"] };
+  L2.accesorios = { anchor: "a.tapa", order: ["a.tapaCaja", "a.caja", "a.prd", "a.liquido", "a.vacio", "a.vapor", "a.tornillos"] };
   const ZF = ZAX([0, 0, 0]);
   const tv = k.towardViewer(P);
   const tv3 = [tv[0], tv[1], 0];
@@ -668,15 +675,18 @@ const SADDLE_F = G.frameOf([0, 0, C], [0, 0, 1], [0, 1, 0], [1, 0, 0]);
   multi("a.tapaCaja", [sDisc(ZF, HOUSING.z1, LID_TOP, 24.6, { tone: "hi", bevel: 0.5, extra: Ln(k.ring(0, 0, 20.5, LID_TOP, P, 64), { tone: "lo" }) + Dots([at([20, 4, LID_TOP]), at([20, -4, LID_TOP])], { size: 0.6, tone: "mid" }) }), ...hinge]);
   // tapa de la entrada de hombre y sus tornillos abatibles
   disc("a.tapa", ZF, PAD_TOP, 179.6, 13.6, { tone: "hi", bevel: 0.4, extra: Ln(k.ring(0, 0, 11.4, 179.6, P, 56), { tone: "faint" }) });
-  const swing = [];
+  // los tornillos rodean las válvulas: los de atrás y los de adelante se pintan por separado
+  const swing = [[], []];
   for (let i = 0; i < 16; i++) {
     const t = (i / 16) * Math.PI * 2 + 0.1;
     const x = 14.6 * Math.cos(t);
     const y = 14.6 * Math.sin(t);
-    swing.push(sDisc(ZAX([x, y, 0]), PAD_TOP, 181.4, 0.5, { tone: "mid" }));
-    swing.push(sDisc(ZAX([x, y, 0]), 179.6, 180.7, 1.0, { tone: "hi" }));
+    const front = x * tv[0] + y * tv[1] > 0 ? 1 : 0;
+    swing[front].push(sDisc(ZAX([x, y, 0]), PAD_TOP, 181.4, 0.5, { tone: "mid" }));
+    swing[front].push(sDisc(ZAX([x, y, 0]), 179.6, 180.7, 1.0, { tone: "hi" }));
   }
-  multi("a.tornillos", swing);
+  multi("a.tornillos", swing[0]);
+  multi("a.tornillos", swing[1]);
   // válvula de alivio de presión
   const PX = [-7, 5];
   multi("a.prd", [sDisc(ZAX([PX[0], PX[1], 0]), 179.6, 180.4, 2.9, { tone: "mid", extra: Dots(G.dotsOf(ZAX([PX[0], PX[1], 0]), 180.4, 2.4, 6, P, { all: true }), { size: 0.4, tone: "mid" }) }), sDisc(ZAX([PX[0], PX[1], 0]), 180.4, 184.2, 2.1, { tone: "hi" }), sDisc(ZAX([PX[0], PX[1], 0]), 184.2, 185.6, 2.6, { tone: "hi", bevel: 0.4 })]);
@@ -694,11 +704,11 @@ const SADDLE_F = G.frameOf([0, 0, C], [0, 0, 1], [0, 1, 0], [1, 0, 0]);
       sDisc(F, side, reach, rn * 0.82, { tone: "hi" }),
       sDisc(F, reach, reach + 1.1, rn * 1.05, { tone: "mid", extra: Dots(G.dotsOf(F, reach + 1.1, rn * 0.6, 4, P, { all: true }), { size: 0.4, tone: "mid" }) }),
       sDisc(ZAX([x, y, 0]), zc + Math.sqrt(rb * rb - 0.25), zc + rb + 0.7, 0.5, { tone: "mid" }),
-      sBox([x - 0.6, y - 0.5, zc + rb + 0.7], [x + rb * 3, y + 0.5, zc + rb + 1.3], { tone: "hi" }),
+      sBox([x - 0.6, y - 0.5, zc + rb + 0.7], [x + rb * 2.2, y + 0.5, zc + rb + 1.3], { tone: "hi" }),
     ]);
   };
-  ball("a.liquido", 6, 1, 2.6, 1.8, 183.2, 13);
-  ball("a.vapor", 5, -9, 2.0, 1.3, 182.4, 11);
+  ball("a.liquido", 6, 1, 2.6, 1.8, 183.2, 11);
+  ball("a.vapor", 2, -7, 2.0, 1.3, 182.4, 7.5);
   // tubo buzo: de la tapa al sumidero (solo en el despiece y en el corte)
   pipe("a.buzo", [[6, 1, PAD_TOP], [6, 1, 45]], 1.3, { maxLength: 200, tone: "hi", ends: [true, false] });
 }
@@ -744,13 +754,14 @@ const SADDLE_F = G.frameOf([0, 0, C], [0, 0, 1], [0, 1, 0], [1, 0, 0]);
   part("f.deposito", "deposito", { asm, v2: [0, 0, -20], mat: "acero" });
   part("f.tubosDep", "tuboDeposito", { asm, v2: [-11, 0, 0], ride2: "f.valvula", mat: "acero" });
   for (const end of ["A", "B"]) {
-    part(`f.llave${end}`, "llaveAngular", { asm, l2: end === "B", v2: [18, 0, 0], mat: "bronce" });
-    part(`f.manguera${end}`, "manguera", { asm, l2: end === "B", v2: [30, 0, -4], mat: "goma" });
+    const sx = end === "B" ? 1 : -1;
+    part(`f.llave${end}`, "llaveAngular", { asm, v2: [sx * 18, 0, 0], mat: "bronce" });
+    part(`f.manguera${end}`, "manguera", { asm, v2: [sx * 30, 0, -4], mat: "goma" });
   }
   part("f.frenoMano", "frenoMano", { asm, v2: [16, 0, 0], mat: "acero" });
   part("f.volante", "volante", { asm, v2: [30, 0, 0], mat: "amarillo" });
   part("f.soporteFreno", "soporteFreno", { asm, v2: [0, 0, -16], mat: "acero" });
-  part("f.cadena", "cadena", { asm, v2: [8, 0, -8], mat: "acero" });
+  part("f.cadena", "cadena", { asm, v2: [0, 14, 0], mat: "acero" });
   part("f.acodada", "palancaAcodada", { asm, v2: [0, 0, -24], mat: "acero" });
   // tubería general con soportes cada ~1.9 m
   const route = G.fillet([[-333, BP.y, BP.low], [-318, BP.y, BP.low], [-318, BP.y, BP.z], [318, BP.y, BP.z], [318, BP.y, BP.low], [333, BP.y, BP.low]], 3, 8);
@@ -766,12 +777,14 @@ const SADDLE_F = G.frameOf([0, 0, C], [0, 0, 1], [0, 1, 0], [1, 0, 0]);
   const teeCut = Math.sqrt(teeR * teeR - BP.r * BP.r);
   gaps.push([teeAt - teeCut, teeAt + teeCut]);
   gaps.sort((a, b) => a[0] - b[0]);
-  pipe("f.tuberia", route, BP.r, { gaps, maxLength: 26, rims: [BP.r * 1.6, BP.r * 1.6] });
-  multi("f.ramal", [sBall(TEE, teeR, { tone: "hi" })]);
+  const bpName = pipe("f.tuberia", route, BP.r, { gaps, maxLength: 26, rims: [BP.r * 1.6, BP.r * 1.6], free: [true, true] });
+  // la te y los collarines abrazan la tubería: son de la misma pieza y salen con ella
+  multi("f.tuberia", [sBall(TEE, teeR, { tone: "hi", owner: bpName })]);
   const tankBelow = (y) => C - Math.sqrt(RJ * RJ - y * y);
   for (const x of brackets) {
     const F = XAX([x, BP.y, BP.z]);
-    multi("f.soportes", [sDisc(F, -0.8, 0.8, 1.15, { tone: "mid" }), sBox([x - 0.8, BP.y - 1.4, BP.z + 1.15], [x + 0.8, BP.y + 1.4, tankBelow(BP.y - 1.4)], { tone: "mid" })]);
+    multi("f.tuberia", [sDisc(F, -0.8, 0.8, 1.3, { tone: "mid", owner: bpName })]);
+    multi("f.soportes", [sBox([x - 0.8, BP.y - 1.4, BP.z + 1.3], [x + 0.8, BP.y + 1.4, tankBelow(BP.y - 1.4)], { tone: "mid" })]);
   }
   // válvula de control con porciones de servicio y emergencia
   const VC = { x0: 138, x1: 148, y0: 12, y1: 28, z0: 33, z1: 45 };
@@ -780,7 +793,7 @@ const SADDLE_F = G.frameOf([0, 0, C], [0, 0, 1], [0, 1, 0], [1, 0, 0]);
     sBox([VC.x0 + 1, VC.y1, VC.z0 + 1.5], [VC.x1 - 1, VC.y1 + 3.4, VC.z1 - 2], { tone: "hi", bevel: 0.3, extra: Ln(k.planOutline({ x: VC.x0 + 2, y: VC.y1 + 0.6, w: VC.x1 - VC.x0 - 4, d: 2.2, r: 0.3 }, VC.z1 - 2, P, 2), { tone: "faint" }) }),
     sBox([VC.x0 + 1, VC.y0 - 3.4, VC.z0 + 1.5], [VC.x1 - 1, VC.y0, VC.z1 - 2], { tone: "hi", bevel: 0.3 }),
   ]);
-  pipe("f.ramal", [[144, BP.y, BP.z - Math.sqrt(teeR * teeR - 0.6 * 0.6)], [144, BP.y, VC.z1]], 0.6, { maxLength: 40 });
+  pipe("f.ramal", [[144, BP.y, BP.z - Math.sqrt(teeR * teeR - 0.6 * 0.6)], [144, BP.y, VC.z1]], 0.6, { maxLength: 40, free: [false, true], touch: [bpName] });
   // depósito de dos compartimentos
   const DEP = { x0: 152, x1: 198, y: 14, z: 38, r: 6.2 };
   const DF = XAX([0, DEP.y, DEP.z]);
@@ -792,8 +805,8 @@ const SADDLE_F = G.frameOf([0, 0, C], [0, 0, 1], [0, 1, 0], [1, 0, 0]);
     ...bandsDep.map((x) => sBox([x - 0.8, DEP.y - 2, DEP.z + DEP.r + 0.4], [x + 0.8, DEP.y + 2, tankBelow(DEP.y - 2)], { tone: "mid" })),
     sDisc(ZAX([175, DEP.y, 0]), DEP.z - DEP.r - 1.4, DEP.z - DEP.r + 0.02, 0.6, { tone: "mid" }),
   ]);
-  pipe("f.tubosDep", [[VC.x1, 16, 40], [DEP.x0, 16, 40]], 0.5, { maxLength: 20 });
-  pipe("f.tubosDep", [[VC.x1, 13, 35.5], [DEP.x0, 13, 35.5]], 0.5, { maxLength: 20 });
+  pipe("f.tubosDep", [[VC.x1, 16, 40], [DEP.x0, 16, 40]], 0.5, { maxLength: 20, free: [false, true] });
+  pipe("f.tubosDep", [[VC.x1, 13, 35.5], [DEP.x0, 13, 35.5]], 0.5, { maxLength: 20, free: [false, true] });
   // llaves angulares y mangueras en ambos extremos
   for (const [end, sx] of [["A", -1], ["B", 1]]) {
     const F = XAX([0, BP.y, BP.low]);
@@ -805,7 +818,7 @@ const SADDLE_F = G.frameOf([0, 0, C], [0, 0, 1], [0, 1, 0], [1, 0, 0]);
       sBox([Math.min(sx * 334, sx * 339) , BP.y - 0.4, BP.low + 2.4], [Math.max(sx * 334, sx * 339), BP.y + 0.4, BP.low + 3.0], { tone: "hi" }),
     ]);
     const gh = { x0: sx * 339.3, x1: sx * 341.7 };
-    pipe(`f.manguera${end}`, G.fillet([[a1, BP.y, BP.low], [sx * 340.5, BP.y, BP.low], [sx * 340.5, BP.y, 29]], 2.4, 8), 0.75, { maxLength: 12, tone: "hi", rings: { pitch: 1.1, fade: [0.1, 0.55], tone: "lo" } });
+    pipe(`f.manguera${end}`, G.fillet([[a1, BP.y, BP.low], [sx * 340.5, BP.y, BP.low], [sx * 340.5, BP.y, 29]], 2.4, 8), 0.75, { maxLength: 12, tone: "hi", rings: { pitch: 1.1, fade: [0.1, 0.55], tone: "lo" }, free: [true, false] });
     multi(`f.manguera${end}`, [sBox([Math.min(gh.x0, gh.x1), BP.y - 1.6, 26], [Math.max(gh.x0, gh.x1), BP.y + 1.6, 29], { tone: "hi", bevel: 0.3 })]);
   }
   // freno de mano en el extremo B, lado cercano
@@ -822,8 +835,8 @@ const SADDLE_F = G.frameOf([0, 0, C], [0, 0, 1], [0, 1, 0], [1, 0, 0]);
   });
   multi("f.volante", [sDisc(WF, 0, 2.6, 1.4, { tone: "hi" }), ...spokes, { svg: S(G.ringBand(1.3, 2.5, 9.0, 10.2, WF, P), { tone: "hi" }), shape: A.ring(WF, 1.3, 2.5, 9.0, 10.2), at: G.add3(WC, [1.9, 0, 0]) }]);
   box("f.acodada", [304.5, 12, 33], [308.5, 17, 37], { tone: "hi", bevel: 0.3 });
-  pipe("f.cadena", [[306.5, 15.6, HB.z0], [306.5, 15.6, 37]], 0.5, { maxLength: 40, tone: "mid", rings: { pitch: 0.9, fade: [0.05, 0.5], tone: "hi" } });
-  L2.frenos = { anchor: "f.deposito", order: ["fB.zapata0N", "fB.zapata0F", "fB.zapata1N", "fB.zapata1F", "fB.cabeza0N", "fB.cabeza0F", "fB.cabeza1N", "fB.cabeza1F", "fB.cilindro", "fB.viga0", "fB.viga1", "fB.palanca0", "fB.palanca1", "fB.ajustador", "fB.varilla", "f.mangueraB", "f.llaveB", "f.soportes", "f.tuberia", "f.tubosDep", "f.valvula", "f.deposito", "f.volante", "f.frenoMano", "f.cadena", "f.acodada", "f.soporteFreno"] };
+  pipe("f.cadena", [[306.5, 15.6, HB.z0], [306.5, 15.6, 37]], 0.5, { maxLength: 40, tone: "mid", rings: { pitch: 0.9, fade: [0.05, 0.5], tone: "hi" }, free: [true, true] });
+  L2.frenos = { anchor: "f.deposito", order: ["fB.zapata0N", "fB.zapata0F", "fB.zapata1N", "fB.zapata1F", "fB.cabeza0N", "fB.cabeza0F", "fB.cabeza1N", "fB.cabeza1F", "fB.cilindro", "fB.varilla", "fB.ajustador", "fB.palanca0", "fB.palanca1", "fB.viga0", "fB.viga1", "f.mangueraB", "f.mangueraA", "f.llaveB", "f.llaveA", "f.soportes", "f.tuberia", "f.valvula", "f.deposito", "f.volante", "f.frenoMano", "f.acodada", "f.cadena", "f.soporteFreno"] };
 }
 
 // ---------------------------------------------------------------------------
@@ -838,8 +851,8 @@ for (const [end, sx] of [["A", -1], ["B", 1]]) {
   part(id("acoplador"), "acoplador", { asm, spring, l2, v2: [X(34), 0, 0], mat: "acoplador" });
   part(id("yugo"), "yugo", { asm, spring, l2, mat: "acero" });
   part(id("aparato"), "aparato", { asm, spring, l2, v2: [0, 30, 0], mat: "aparato" });
-  part(id("llaveN"), "llave", { asm, spring, l2, v2: [0, 14, 0], mat: "acero" });
-  part(id("llaveF"), "llave", { asm, spring, l2, v2: [0, -14, 0], mat: "acero" });
+  part(id("llaveN"), "llave", { asm, spring, l2, v2: [0, 10, 18], mat: "acero" });
+  part(id("llaveF"), "llave", { asm, spring, l2, v2: [0, -10, 18], mat: "acero" });
   part(id("soporte"), "soporteAcoplador", { asm, spring, l2, v2: [0, 0, -12], mat: "acero" });
   if (l2) L2.enganches = { anchor: id("yugo"), order: [id("llaveN"), id("llaveF"), id("acoplador"), id("soporte"), id("aparato")] };
   const owner = id("acoplador");
@@ -850,8 +863,9 @@ for (const [end, sx] of [["A", -1], ["B", 1]]) {
   // nudillo del lado cercano en B, del lado lejano en A (los acopladores de un carro son opuestos)
   const kn = sx > 0 ? [0.5, 8.6] : [-8.6, -0.5];
   const gd = sx > 0 ? [-7.5, -3] : [3, 7.5];
+  // el vástago pasa por la boca de la cara de choque: es su propio ítem, la cabeza otro
+  box(id("acoplador"), [s0, -3.4, 31], [s1, 3.4, 38.2], { owner });
   multi(id("acoplador"), [
-    sBox([s0, -3.4, 31], [s1, 3.4, 38.2], { tone: "hi", owner }),
     sBox([h0, -7.5, 28], [h1, 7.5, 41.2], { tone: "hi", bevel: 0.5, owner, extra: Dots([at([X(353), 7.5, 30.5]), at([X(353), 7.5, 38.6])], { size: 0.55, tone: "mid" }) }),
     sBox([span(347, 358)[0], -7.5, 41.2], [span(347, 358)[1], 7.5, 42], { tone: "hi", owner }),
     sBox([span(347, 358)[0], -7.5, 27.2], [span(347, 358)[1], 7.5, 28], { tone: "hi", owner }),
@@ -861,13 +875,13 @@ for (const [end, sx] of [["A", -1], ["B", 1]]) {
   const [y0, y1] = span(290.4, 292);
   const [y2, y3] = span(331, 334);
   const [d0, d1] = span(292, 331);
-  multi(id("yugo"), [
-    sBox([d0, -7, 41.8], [d1, 7, SILL.plate], { tone: "hi" }),
-    sBox([d0, -7, 27.6], [d1, 7, 28.8], { tone: "hi" }),
-    sBox([y0, -7, 27.6], [y1, 7, SILL.plate], { tone: "hi" }),
-    sBox([y2, -7, 27.6], [y3, 7, SILL.plate], { tone: "hi" }),
-  ]);
-  box(id("aparato"), [d0, -6.6, 28.8], [d1, 6.6, 41.8], { tone: "hi", bevel: 0.3, inner: Ln([0.2, 0.4, 0.6, 0.8].map((t) => k.sideSeam({ x: d0, y: -6.6, w: d1 - d0, d: 13.2, r: 0.2 }, 28.8 + 13 * t, P, 2)).join(""), { tone: "faint" }) });
+  // el yugo abraza al aparato: cada tramo es su propio ítem para que el orden de pintado los separe
+  const yo = id("yugo");
+  box(yo, [d0, -7, 40.8], [d1, 7, 41.8], { owner: yo });
+  box(yo, [d0, -7, 27.6], [d1, 7, 28.8], { owner: yo });
+  box(yo, [y0, -7, 27.6], [y1, 7, 41.8], { owner: yo });
+  box(yo, [y2, -7, 27.6], [y3, 7, 41.8], { owner: yo });
+  box(id("aparato"), [d0, -6.6, 28.8], [d1, 6.6, 40.8], { tone: "hi", bevel: 0.3, inner: Ln([0.2, 0.4, 0.6, 0.8].map((t) => k.sideSeam({ x: d0, y: -6.6, w: d1 - d0, d: 13.2, r: 0.2 }, 28.8 + 12 * t, P, 2)).join(""), { tone: "faint" }) });
   const [k0, k1] = span(328.5, 331.5);
   box(id("llaveN"), [k0, SILL.web[1], 32], [k1, 15.4, 37], { tone: "hi", bevel: 0.3 });
   box(id("llaveF"), [k0, -15.4, 32], [k1, -SILL.web[1], 37], { tone: "hi", bevel: 0.3 });
@@ -1020,6 +1034,159 @@ for (const asm of Object.keys(L2)) {
 }
 
 // ---------------------------------------------------------------------------
+// Corte longitudinal por el plano vertical del eje (y = 0): se quita la mitad cercana del tanque.
+// Se ve la mitad lejana por dentro, las capas de pared cortadas, el sumidero, la boquilla de la
+// entrada de hombre y el diésel con un llenado típico.
+const FILL_FRAC = 0.94; // diésel: el peso bruto de 286 000 lb limita el llenado
+const MANWAY_HOLE = 10; // boca de 20 in
+const SUMP = { r: 7.5, rin: 6.3, z0: 42.6, floor: 43.8, fl: 9.2, flz: 41.2, outlet: 3.4 };
+function fillLevel(frac, r) {
+  // altura del líquido en un cilindro horizontal para una fracción de área dada
+  let lo = 0;
+  let hi = 2 * r;
+  for (let i = 0; i < 60; i++) {
+    const h = (lo + hi) / 2;
+    const phi = 2 * Math.acos(1 - h / r);
+    const area = (r * r * (phi - Math.sin(phi))) / 2;
+    if (area / (Math.PI * r * r) < frac) lo = h;
+    else hi = h;
+  }
+  return (lo + hi) / 2;
+}
+const LIQUID_Z = C - SHELL_IN.r0 + fillLevel(FILL_FRAC, SHELL_IN.r0);
+function cutSvg() {
+  const d = (pts, close = true) => "M" + pts.map((p) => `${p[0].toFixed(2)} ${p[1].toFixed(2)}`).join("L") + (close ? "Z" : "");
+  const P3 = (pts) => pts.map((p) => at(p));
+  const sList = (h, n = 34) => {
+    const ss = profileOf(h, -h.tip, h.tip, n).map(([s]) => s);
+    const out = [];
+    for (let i = 0; i < ss.length - 1; i++) {
+      const steps = Math.max(1, Math.ceil((ss[i + 1] - ss[i]) / 22));
+      for (let j = 0; j < steps; j++) out.push(ss[i] + ((ss[i + 1] - ss[i]) * j) / steps);
+    }
+    out.push(ss[ss.length - 1]);
+    return out;
+  };
+  // facetas de la mitad lejana (y <= 0) de una superficie de revolución, vistas desde afuera o desde adentro
+  const facets = (h, inside) => {
+    const ss = sList(h);
+    const out = [];
+    const T0 = Math.PI / 2;
+    const n = 40;
+    for (let i = 0; i < ss.length - 1; i++) {
+      for (let j = 0; j < n; j++) {
+        const t0 = T0 + (Math.PI * j) / n;
+        const t1 = T0 + (Math.PI * (j + 1)) / n;
+        const sm = (ss[i] + ss[i + 1]) / 2;
+        const tm = (t0 + t1) / 2;
+        let nrm = G.unit3([-h.slope(sm), Math.cos(tm), Math.sin(tm)]);
+        if (inside) nrm = G.mul3(nrm, -1);
+        if (G.dot3(nrm, V) <= 1e-6) continue;
+        const pt = (s, t) => [s, h.radius(s) * Math.cos(t), C + h.radius(s) * Math.sin(t)];
+        out.push({ poly: P3([pt(ss[i], t0), pt(ss[i + 1], t0), pt(ss[i + 1], t1), pt(ss[i], t1)]), tone: G.toneOf(nrm, P) });
+      }
+    }
+    return out;
+  };
+  const shaded = (list, cls) => {
+    const buckets = [[], [], [], [], []];
+    for (const f of list) buckets[Math.min(4, f.tone)].push(d(f.poly));
+    const fill = list.map((f) => d(f.poly)).join("");
+    return `<g class="${cls}"><path class="cx-fill" d="${fill}"/>${buckets.map((b, i) => (b.length ? `<path class="cx-tone" data-t="${i}" d="${b.join("")}"/>` : "")).join("")}</g>`;
+  };
+  const parts = [];
+  // 1. interior de la mitad lejana de la virola y los cabezales
+  parts.push(shaded(facets(SHELL_IN, true), "cx-inner"));
+  // 2. superficie libre del diésel
+  {
+    const a = Math.abs(LIQUID_Z - C);
+    const ss = sList(SHELL_IN, 50).filter((s) => SHELL_IN.radius(s) > a + 0.05);
+    const w = (s) => Math.sqrt(Math.max(0, SHELL_IN.radius(s) ** 2 - a * a));
+    const back = ss.map((s) => [s, -w(s), LIQUID_Z]);
+    const front = [...ss].reverse().map((s) => [s, 0, LIQUID_Z]);
+    parts.push(`<path class="cx-liquid-top" d="${d(P3([...back, ...front]))}"/>`);
+    const glints = [-200, -110, -20, 70, 160].map((x) => d(P3([[x, -w(x) * 0.25, LIQUID_Z], [x + 26, -w(x) * 0.25, LIQUID_Z]]), false)).join("");
+    parts.push(`<path class="cx-glint" d="${glints}"/>`);
+  }
+  // 3. mitad lejana exterior que queda a la vista (franja superior y cabezal B)
+  const outer = facets(JACKET, false);
+  parts.push(`<defs><clipPath id="cx-outer" clipPathUnits="userSpaceOnUse"><path d="${outer.map((f) => d(f.poly)).join("")}"/></clipPath></defs><g data-mat="negro" clip-path="url(#cx-outer)">${S(bodyPaths(JACKET), { tone: "hi" })}</g>`);
+  // 4. caras de corte en el plano y = 0
+  const onPlane = (s, z) => at([s, 0, z]);
+  const band = (outerH, innerH, from, to, holes = []) => {
+    // anillo de pared entre dos perfiles, recortado en [from, to] y con huecos [a, b] (arriba o abajo)
+    const segs = [];
+    for (const sign of [1, -1]) {
+      const cuts = holes.filter((hh) => hh.sign === sign).map((hh) => [hh.a, hh.b]);
+      let spans = [[from, to]];
+      for (const [a, b] of cuts) spans = spans.flatMap(([x0, x1]) => (b <= x0 || a >= x1 ? [[x0, x1]] : [[x0, a], [b, x1]].filter(([u, v]) => v - u > 0.01)));
+      for (const [x0, x1] of spans) {
+        const ss = [];
+        const n = Math.max(2, Math.ceil((x1 - x0) / 3));
+        for (let i = 0; i <= n; i++) ss.push(x0 + ((x1 - x0) * i) / n);
+        const o = ss.map((s) => onPlane(s, C + sign * outerH.radius(s)));
+        const inn = [...ss].reverse().map((s) => onPlane(s, C + sign * innerH.radius(Math.max(-innerH.tip, Math.min(innerH.tip, s)))));
+        segs.push(d([...o, ...inn]));
+      }
+    }
+    return segs.join("");
+  };
+  const holes = [{ sign: 1, a: -MANWAY_HOLE - 1.2, b: MANWAY_HOLE + 1.2 }, { sign: -1, a: -SUMP.r, b: SUMP.r }];
+  // cabezales: la sección de cada cabezal se cierra en su ápice
+  const capBand = (outerH, innerH, sx) => {
+    const ss = profileOf(outerH, sx < 0 ? -outerH.tip : CYL, sx < 0 ? -CYL : outerH.tip, 30).map(([s]) => s);
+    const o = [...ss.map((s) => onPlane(s, C + outerH.radius(s))), ...[...ss].reverse().map((s) => onPlane(s, C - outerH.radius(s)))];
+    const si = profileOf(innerH, sx < 0 ? -innerH.tip : CYL, sx < 0 ? -CYL : innerH.tip, 30).map(([s]) => s);
+    const i = [...si.map((s) => onPlane(s, C + innerH.radius(s))), ...[...si].reverse().map((s) => onPlane(s, C - innerH.radius(s)))];
+    return d(o) + d(i.reverse());
+  };
+  const layer = (cls, outerH, innerH) => `<path class="cx-sec ${cls}" fill-rule="evenodd" d="${band(outerH, innerH, -CYL, CYL, holes)}${capBand(outerH, innerH, -1)}${capBand(outerH, innerH, 1)}"/>`;
+  // diésel cortado
+  {
+    const a = LIQUID_Z;
+    const ss = sList(SHELL_IN, 50).filter((s) => C - SHELL_IN.radius(s) < a - 0.05);
+    const top = ss.map((s) => onPlane(s, Math.min(a, C + SHELL_IN.radius(s))));
+    const bottom = [...ss].reverse().map((s) => (Math.abs(s) < SUMP.rin ? onPlane(s, SUMP.floor) : onPlane(s, C - SHELL_IN.radius(s))));
+    parts.push(`<path class="cx-liquid" d="${d([...top, ...bottom])}"/>`);
+  }
+  parts.push(layer("cx-shell", SHELL, SHELL_IN));
+  parts.push(layer("cx-insul", INSUL, INSUL_IN));
+  parts.push(layer("cx-jacket", JACKET, JACKET_IN));
+  // escudos de cabezal cortados
+  const SH = hull(RJ + M.headShield, RJ / 2 + M.headShield);
+  for (const sx of [-1, 1]) {
+    const ss = profileOf(SH, sx < 0 ? -SH.tip : CYL + 6, sx < 0 ? -CYL - 6 : SH.tip, 30).map(([s]) => s);
+    const half = (sign) => d([...ss.map((s) => onPlane(s, C + sign * SH.radius(s))), ...[...ss].reverse().map((s) => onPlane(s, C + sign * JACKET.radius(s)))]);
+    parts.push(`<path class="cx-sec cx-shield" d="${half(1)}${half(-1)}"/>`);
+  }
+  // sumidero y su brida, cortados
+  {
+    const top = C - SHELL.r0;
+    const blocks = [
+      [[-SUMP.r, SUMP.z0], [-SUMP.rin, SUMP.z0], [-SUMP.rin, top + 0.6], [-SUMP.r, top + 0.6]],
+      [[SUMP.rin, SUMP.z0], [SUMP.r, SUMP.z0], [SUMP.r, top + 0.6], [SUMP.rin, top + 0.6]],
+      [[-SUMP.rin, SUMP.z0], [SUMP.rin, SUMP.z0], [SUMP.rin, SUMP.floor], [-SUMP.rin, SUMP.floor]],
+      [[-SUMP.fl, SUMP.flz], [-SUMP.outlet, SUMP.flz], [-SUMP.outlet, SUMP.z0], [-SUMP.fl, SUMP.z0]],
+      [[SUMP.outlet, SUMP.flz], [SUMP.fl, SUMP.flz], [SUMP.fl, SUMP.z0], [SUMP.outlet, SUMP.z0]],
+    ];
+    parts.push(`<path class="cx-sec cx-steel" d="${blocks.map((b) => d(b.map(([x, z]) => onPlane(x, z)))).join("")}"/>`);
+    // el piso del sumidero tiene un agujero de salida hacia la válvula
+    parts.push(`<path class="cx-hole" d="${d([[-SUMP.outlet, SUMP.z0], [SUMP.outlet, SUMP.z0], [SUMP.outlet, SUMP.floor], [-SUMP.outlet, SUMP.floor]].map(([x, z]) => onPlane(x, z)))}"/>`);
+  }
+  // boquilla de la entrada de hombre cortada: atraviesa chaqueta, aislamiento y virola
+  {
+    const neck = [
+      [[-25.4, C + JACKET.r0 - 0.3], [-MANWAY_HOLE - 1.2, C + JACKET.r0 - 0.3], [-MANWAY_HOLE - 1.2, PAD_TOP], [-25.4, PAD_TOP]],
+      [[MANWAY_HOLE + 1.2, C + JACKET.r0 - 0.3], [25.4, C + JACKET.r0 - 0.3], [25.4, PAD_TOP], [MANWAY_HOLE + 1.2, PAD_TOP]],
+      [[-MANWAY_HOLE - 1.2, C + SHELL_IN.r0 - 1.5], [-MANWAY_HOLE, C + SHELL_IN.r0 - 1.5], [-MANWAY_HOLE, PAD_TOP], [-MANWAY_HOLE - 1.2, PAD_TOP]],
+      [[MANWAY_HOLE, C + SHELL_IN.r0 - 1.5], [MANWAY_HOLE + 1.2, C + SHELL_IN.r0 - 1.5], [MANWAY_HOLE + 1.2, PAD_TOP], [MANWAY_HOLE, PAD_TOP]],
+    ];
+    parts.push(`<path class="cx-sec cx-steel" d="${neck.map((b) => d(b.map(([x, z]) => onPlane(x, z)))).join("")}"/>`);
+  }
+  return parts.join("");
+}
+
+// ---------------------------------------------------------------------------
 // Página
 const unit = (v) => {
   const o = at([0, 0, 0]);
@@ -1028,13 +1195,20 @@ const unit = (v) => {
 };
 const f2 = (v) => v.map((n) => n.toFixed(1)).join(",");
 const sorted = [...ITEMS].sort((a, b) => (a.k1 ?? a.k2 ?? 0) - (b.k1 ?? b.k2 ?? 0));
+const cutKey = ITEMS.find((it) => it.pid === "t.chaquetaInf").k1 ?? 0;
+for (const it of ITEMS) if (it.pid === "a.buzo") it.k1 = cutKey + 0.4;
 const groups = sorted.map((it) => {
   const p = PARTS[it.pid];
   const k2 = it.k2 ?? 0;
   const k1 = it.k1 ?? it.k2 ?? 0;
   const r2 = p.ride2 ?? it.pid;
-  return `<g class="it" data-p="${it.pid}" data-r="${it.ride}" data-r2="${r2}" data-a="${it.asm}" data-mat="${it.mat ?? "acero"}" data-k="${k1.toFixed(2)}" data-k2="${k2.toFixed(2)}" data-m2="${f2(PARTS[r2].v2)}"${p.l2 ? "" : ' data-x2=""'}${p.l1 ? "" : ' data-x1=""'}>${it.svg}</g>`;
+  return `<g class="it" data-p="${it.pid}" data-r="${it.ride}" data-r2="${r2}" data-a="${it.asm}" data-mat="${it.mat ?? "acero"}" data-k="${k1.toFixed(2)}" data-k2="${k2.toFixed(2)}" data-m2="${f2(PARTS[r2].v2)}"${p.l2 ? "" : ' data-x2=""'}${p.l1 ? "" : ' data-x1="" data-off=""'}>${it.svg}</g>`;
 });
+
+// el corte entra en el orden de pintado en el lugar de la chaqueta
+const cutGroup = `<g class="it" data-p="t.corte" data-r="tanque" data-r2="t.corte" data-a="tanque" data-mat="primer" data-k="${cutKey.toFixed(2)}" data-k2="0" data-m2="0,0,0" data-x2="" data-off="">${cutSvg()}</g>`;
+groups.splice(sorted.findIndex((it) => (it.k1 ?? 0) > cutKey), 0, cutGroup);
+part("t.corte", "corte", { asm: "tanque", l2: false, l1: false });
 
 const STEPS = [
   { asm: "bogies", springs: ["bogieB", "bogieA"], es: "Bogíes", line: "Se ruedan los dos bogíes sobre la vía; cada uno ya trae su timonería de freno TMX (vigas, zapatas, palancas, ajustador y cilindro)." },
@@ -1048,7 +1222,7 @@ const STEPS = [
 ];
 // El montaje paso a paso es exactamente el despiece al revés: la auditoría ya recorre esos cuadros (estados de prefijo).
 if (STEPS.flatMap((st) => st.springs).join() !== [...STAGGER].reverse().join()) throw new Error("los pasos no son el despiece al revés");
-const FILL = 0.94;
+const FILL = FILL_FRAC;
 const CAPACITY_L = 115830;
 const DATA = {
   W,
@@ -1068,6 +1242,7 @@ const DATA = {
   fill: FILL,
   fillLitres: Math.round((CAPACITY_L * FILL) / 100) * 100,
   cutHides: ["t.chaquetaSup", "t.chaquetaInf", "t.escudoA", "t.escudoB", "t.boquilla", "t.sumidero", "a.caja", "a.tapaCaja", "s.escaleraN", "s.agarraderaN", "s.placaN"],
+  corteInfo: detalleHtml(),
   infoDefault: `<p class="ct-info-asm">Ficha de la pieza</p><h3 class="ct-info-name">Pasa el cursor o toca una pieza</h3><p>Verás su nombre en español, el término en inglés que se usa en taller, su función y su material.</p>`,
   parts: Object.fromEntries(Object.entries(PARTS).map(([id, p]) => [id, { t: p.type, a: p.asm }])),
   l2: Object.fromEntries(Object.entries(L2).map(([a, s]) => [a, { order: s.order }])),
@@ -1104,7 +1279,7 @@ const SRC = {
 };
 const rows = MEDIDAS.map(([what, val, src]) => `<tr><th scope="row">${what}</th><td>${val}</td><td>${src ? `<a href="${SRC[src][1]}" rel="noopener">${SRC[src][0]}</a>` : "aproximado"}</td></tr>`).join("");
 const caption = `<figcaption class="ct-caption"><p>Carro tanque DOT-117J100W para líquidos inflamables (diésel, gasolina): tanque con virola de 9/16 in, protección térmica y chaqueta, escudos de cabezal de altura completa, accesorios superiores dentro de una caja protectora y válvula inferior protegida. Dibujado a escala real con trocha de 1 435 mm y ruedas de 36 in; las medidas sin fuente están marcadas como aproximadas. Fuentes adicionales: <a href="https://www.gatx.com/products/large-capacity-general-service-tank-cars-25k/" rel="noopener">GATX, DOT-117J</a>; <a href="https://www.phmsa.dot.gov/regulations/title49/interp/15-0133" rel="noopener">PHMSA, interpretación 15-0133</a>.</p><table class="ct-table"><thead><tr><th scope="col">Medida</th><th scope="col">Valor</th><th scope="col">Fuente</th></tr></thead><tbody>${rows}</tbody></table></figcaption>`;
-const body = `<header class="ct-head"><p class="ct-eyebrow">Capacitación técnica · material rodante</p><h1>Carro tanque DOT-117 para combustibles líquidos</h1><p class="ct-lede">Ocho ensambles y ${new Set(Object.values(PARTS).filter((p) => p.asm !== "via").map((p) => p.type)).size} tipos de pieza, armados en el orden real de montaje. Separa los ensambles, abre cada uno en sus piezas, sigue el montaje paso a paso o corta el tanque para ver su interior.</p></header><figure class="iso-figure ct"><div class="iso-plate">${corners}<div class="ct-bar" role="group" aria-label="Modo de vista">${modes}</div><div class="ct-stage" tabindex="0" role="group" aria-label="Carro tanque DOT-117. Flechas: abrir el ensamble siguiente o anterior (en paso a paso, avanzar o retroceder). Espacio: separar o juntar los ensambles. Escape: volver al carro armado.">${backSvg}${frontSvg}</div>${steps}<span class="ct-live" aria-live="polite" data-live></span></div><div class="ct-below"><nav class="ct-asms" aria-label="Ensambles"><ol>${asmList}</ol></nav><aside class="ct-info" data-info aria-live="polite"></aside></div>${caption}</figure>`;
+const body = `<header class="ct-head"><p class="ct-eyebrow">Capacitación técnica · material rodante</p><h1>Carro tanque DOT-117 para combustibles líquidos</h1><p class="ct-lede">Ocho ensambles y ${new Set(Object.values(PARTS).filter((p) => p.asm !== "via" && p.type !== "corte").map((p) => p.type)).size} tipos de pieza, armados en el orden real de montaje. Separa los ensambles, abre cada uno en sus piezas, sigue el montaje paso a paso o corta el tanque para ver su interior.</p></header><figure class="iso-figure ct"><div class="iso-plate">${corners}<div class="ct-bar" role="group" aria-label="Modo de vista">${modes}</div><div class="ct-stage" tabindex="0" role="group" aria-label="Carro tanque DOT-117. Flechas: abrir el ensamble siguiente o anterior (en paso a paso, avanzar o retroceder). Espacio: separar o juntar los ensambles. Escape: volver al carro armado.">${backSvg}${frontSvg}</div><span class="ct-live" aria-live="polite" data-live></span></div>${steps}<div class="ct-below"><nav class="ct-asms" aria-label="Ensambles"><ol>${asmList}</ol></nav><aside class="ct-info" data-info aria-live="polite"></aside></div>${caption}</figure>`;
 const page = k.pageHtml({ title: "Carro tanque DOT-117", theme: "light", body: `<style>${CSS}</style>${body}`, script: kitScript() + LIVE, width: 1320 }).replace('lang="en"', 'lang="es"');
 const OUT = join(HERE, "..", "carro-tanque.html");
 if (!ONLY) writeFileSync(OUT, page);
@@ -1114,7 +1289,9 @@ if (AUDIT) {
   const runs = [["nivel 1", R1], ...Object.entries(R2).map(([a, R]) => [`nivel 2 · ${a}`, R])].filter(([label]) => want(label));
   let bad = 0;
   for (const [label, R] of runs) {
-    const result = A.audit(R, P);
+    // tubería y mangueras pasan por delante de las almas de la viga, a 16–20 unidades de profundidad: revisado a 4×
+    const CROWD_OK = [["f.tuberia*", "eA.viga*"], ["f.tuberia*", "eB.viga*"], ["f.manguera*", "eA.viga*"], ["f.manguera*", "eB.viga*"], ["f.cadena*", "eB.viga*"], ["f.mangueraB*", "bB.eje1*"]];
+    const result = A.audit(R, P, { crowd: CROWD_OK });
     const n = A.failures(result);
     console.log(`\n=== ${label}: ${n} problema(s)`);
     if (n) console.log(A.report(result));

@@ -22,7 +22,7 @@ const screenOf = (m) => [D.EX[0] * m[0] + D.EY[0] * m[1] + D.EZ[0] * m[2], D.EX[
 const nodes = [...car.querySelectorAll(".it")].map((el) => {
   const m1 = D.move[el.dataset.r] ?? [0, 0, 0];
   const m2 = el.dataset.m2.split(",").map(Number);
-  return { el, pid: el.dataset.p, ride: el.dataset.r, ride2: el.dataset.r2, asm: el.dataset.a, k1: Number(el.dataset.k), k2: Number(el.dataset.k2), m1, m2, lift1: dot(m1), lift2: dot(m2), x1: el.hasAttribute("data-x1"), x2: el.hasAttribute("data-x2"), shown: "", off: false, box: null };
+  return { el, pid: el.dataset.p, ride: el.dataset.r, ride2: el.dataset.r2, asm: el.dataset.a, k1: Number(el.dataset.k), k2: Number(el.dataset.k2), m1, m2, lift1: dot(m1), lift2: dot(m2), x1: el.hasAttribute("data-x1"), x2: el.hasAttribute("data-x2"), shown: "", off: el.hasAttribute("data-off"), box: null };
 });
 const cutLayer = stage.querySelector(".ct-cut");
 const tankNodes = nodes.filter((n) => D.cutHides.includes(n.pid));
@@ -104,7 +104,9 @@ function follow(c, target, dt, tau, calm) {
 const share1 = (n) => s1[n.ride]?.x ?? 0;
 const share2 = (n) => s2[n.ride2]?.x ?? 0;
 function visible(n) {
+  if (n.pid === "t.corte") return mode === "corte" && !level2;
   if (mode === "corte" && tankNodes.includes(n)) return false;
+  if (mode === "corte" && !level2 && n.pid === "a.buzo") return true;
   if (level2) return n.asm === sel && !n.x2;
   if (n.x1) return false;
   if (mode === "pasos") {
@@ -242,7 +244,7 @@ function announce(text) {
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 function showPart(pid) {
   if (!pid) {
-    info.innerHTML = D.infoDefault;
+    info.innerHTML = mode === "corte" ? D.corteInfo : D.infoDefault;
     return;
   }
   const p = D.parts[pid];
@@ -276,6 +278,7 @@ function setMode(next, { quiet = false } = {}) {
     showStep();
   }
   if (hint) hint.textContent = HINTS[mode];
+  if (!pinned) showPart(null);
   announce({ armado: "Carro armado", despiece: "Despiece en ensambles", pasos: "Montaje paso a paso", corte: "Corte longitudinal del tanque" }[mode]);
   aim();
 }
