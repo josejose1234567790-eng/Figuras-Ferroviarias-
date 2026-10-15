@@ -1,0 +1,138 @@
+<header class="top">
+  <p class="eyebrow">Ramal Poxilá–Mérida · PK 115+450 · Anillo Periférico de Mérida · 20.927703, −89.690472</p>
+  <h1>Cierre del cruce a nivel al paso de un tren de carga</h1>
+  <p class="lede">Cuánto tiempo se cierra el cruce, qué tan larga es la fila en cada sentido, si llega a los accesos más cercanos y en cuánto tiempo se normaliza el tránsito, según la velocidad, el largo del tren y la hora.</p>
+</header>
+
+<main class="layout">
+  <section class="card stage" aria-label="Vista 3D del cruce">
+    <div class="card-head">
+      <span class="fig">Fig. 1</span>
+      <div class="views" role="group" aria-label="Vistas">
+        <button type="button" data-view="cruce" class="on">Cruce</button>
+        <button type="button" data-view="filaSur">Fila sentido sur</button>
+        <button type="button" data-view="filaNorte">Fila sentido norte</button>
+        <button type="button" data-view="aerea">Aérea</button>
+        <button type="button" data-view="nivel">A nivel</button>
+        <button type="button" data-view="tren">Seguir tren</button>
+      </div>
+    </div>
+    <div class="viewport">
+      <canvas id="view" aria-label="Vista 3D del cruce a nivel: arrastra para girar, rueda para acercar"></canvas>
+      <div id="labels" aria-hidden="true"></div>
+      <div class="hud">
+        <span id="phase" class="chip" data-phase="libre">Cruce abierto · tránsito libre</span>
+        <span id="clock" class="chip chip-ghost">Hora simulada 10:00:00</span>
+      </div>
+      <div class="hud hud-r">
+        <span class="chip chip-ghost">Escala real 1:1</span>
+      </div>
+      <div id="fail" class="fail"><p>Este navegador no pudo iniciar WebGL, que hace falta para la vista 3D. Los cálculos, la vista de la fila y las tablas siguen disponibles abajo.</p></div>
+    </div>
+    <div class="timeline" aria-hidden="true">
+      <div class="tl-track">
+        <div class="tl-seg tl-pre" id="tlPre"></div><div class="tl-seg tl-pass" id="tlPass"></div><div class="tl-seg tl-re" id="tlRe"></div><div class="tl-seg tl-lost" id="tlLost"></div><div class="tl-seg tl-dis" id="tlDis"></div>
+        <div class="tl-cursor" id="tlCursor"></div>
+      </div>
+      <div class="tl-keys">
+        <span><i class="k-pre"></i>Preaviso</span><span><i class="k-pass"></i>Paso del tren</span><span><i class="k-re"></i>Reapertura</span><span><i class="k-lost"></i>Arranque</span><span><i class="k-dis"></i>Disipación (sentido más lento)</span>
+      </div>
+    </div>
+    <div class="card-foot">
+      <span class="hint">Arrastrar: girar · Rueda: acercar · Clic derecho: desplazar</span>
+      <span class="readout" id="readout">—</span>
+    </div>
+  </section>
+
+  <aside class="card side" aria-label="Controles">
+    <div class="ctl">
+      <span class="ctl-label">Aforo diario (ambos sentidos)</span>
+      <div class="seg" role="radiogroup" data-ctl="aforo">
+        <button type="button" data-v="90000" class="on">90,000 <small>conteo de campo</small></button>
+        <button type="button" data-v="43446">43,446 <small>SICT 2026</small></button>
+      </div>
+    </div>
+    <div class="ctl">
+      <span class="ctl-label">Hora del día <b id="horaTxt">10:00–11:00</b> <em id="horaTag" class="tag"></em></span>
+      <input type="range" id="hora" min="0" max="23" step="1" value="10" aria-label="Hora del día">
+    </div>
+    <div class="ctl">
+      <span class="ctl-label">Velocidad del tren</span>
+      <div class="seg" role="radiogroup" data-ctl="vel">
+        <button type="button" data-v="5">5 km/h</button>
+        <button type="button" data-v="10">10 km/h</button>
+        <button type="button" data-v="15" class="on">15 km/h <small>estudio</small></button>
+      </div>
+    </div>
+    <div class="ctl">
+      <span class="ctl-label">Tren</span>
+      <div class="seg" role="radiogroup" data-ctl="carros">
+        <button type="button" data-v="20">20 carros <small>462 m</small></button>
+        <button type="button" data-v="33" class="on">33 carros <small>748 m</small></button>
+      </div>
+    </div>
+    <div class="ctl">
+      <span class="ctl-label">Reproducción</span>
+      <div class="seg seg-small" role="radiogroup" data-ctl="play">
+        <button type="button" data-v="1">×1</button>
+        <button type="button" data-v="5">×5</button>
+        <button type="button" data-v="10" class="on">×10</button>
+        <button type="button" data-v="30">×30</button>
+      </div>
+    </div>
+    <button type="button" id="go" class="go">Pasar tren</button>
+
+    <div class="closure">
+      <div class="closure-head"><span>Cierre total del cruce</span><b id="cierreTot">—</b></div>
+      <div class="closure-bar" aria-hidden="true"><i class="k-pre" id="cbPre"></i><i class="k-pass" id="cbPass"></i><i class="k-re" id="cbRe"></i></div>
+      <dl class="closure-list">
+        <div><dt><i class="k-pre"></i>Preaviso (luces y barreras)</dt><dd id="cPre">—</dd></div>
+        <div><dt><i class="k-pass"></i>Paso del tren <small id="cPassTxt"></small></dt><dd id="cPass">—</dd></div>
+        <div><dt><i class="k-re"></i>Reapertura (suben barreras)</dt><dd id="cRe">—</dd></div>
+        <div class="sub"><dt>+ tiempo perdido al arrancar</dt><dd id="cLost">—</dd></div>
+      </dl>
+    </div>
+  </aside>
+
+  <section class="card queue" aria-label="Vista de la fila con escala comprimida">
+    <div class="card-head">
+      <span class="fig">Fig. 2</span>
+      <span class="title">Fila en cada sentido · escala comprimida</span>
+    </div>
+    <div id="queueView" class="queue-view"></div>
+    <div class="card-foot">
+      <span class="hint">La escala a lo largo del Periférico está comprimida; el ancho de los carriles no está a escala</span>
+      <span class="readout" id="queueReadout">—</span>
+    </div>
+  </section>
+
+  <section class="results" aria-label="Resultados por sentido">
+    <article class="card dir dir-sur" id="resSur"></article>
+    <article class="card dir dir-norte" id="resNorte"></article>
+  </section>
+
+  <section class="card day" aria-label="Franja de 24 horas">
+    <div class="card-head">
+      <span class="fig">Fig. 3</span>
+      <span class="title">Las 24 horas · elige la hora</span>
+    </div>
+    <div id="dayStrip" class="day-strip"></div>
+    <div class="legend">
+      <span><i class="k-peak"></i>Horas pico</span><span><i class="k-low"></i>Tránsito bajo</span><span><i class="k-win"></i>Ventanas de operación solicitadas</span><span><i class="k-bar"></i>Fila del sentido más cargado (m)</span>
+    </div>
+  </section>
+
+  <section class="card compare" aria-label="Comparación">
+    <div class="card-head">
+      <span class="fig">Tabla 1</span>
+      <span class="title" id="cmpTitle">Comparación a la hora elegida</span>
+    </div>
+    <div class="table-wrap"><table id="cmpTable"></table></div>
+  </section>
+
+  <footer class="notes">
+    <p><b>Fuentes.</b> SICT, Datos Viales 2026, estación X. Periférico de Mérida km 16.37 (41,985 veh/día en 2025; 43,446 estimado para 2026 con tendencia de 3.48 % anual; sentido 1 hacia el sur 20,717 y sentido 2 hacia el norte 21,268). Conteo de campo en el semáforo del km 48: 62.5 veh/min × 60 × 24 = 90,000 veh/día ambos sentidos.</p>
+    <p><b>Supuestos.</b> Perfil horario estimado; todo el aforo en 3 carriles por sentido (conservador: no se cargan los 2 carriles laterales); preaviso de 60 s y reapertura de 10 s; 3 s de tiempo perdido al arrancar; flujo de saturación de 1,800 veh/h por carril con factor de pesados por equivalentes (4,962 veh/h por sentido); vehículos detenidos a 15 m de la vía y espacio en fila igual al largo del vehículo más 1 m. La fila se mide desde la vía.</p>
+    <p><b>Modelo.</b> Cierre = preaviso + (largo del tren + 85 m) ÷ velocidad + reapertura. Fila = llegadas × (cierre + 3 s). Largo = 15 m + fila ÷ 3 carriles × espaciamiento medio. Disipación = fila ÷ (salida − llegadas). Los vehículos animados llegan con la composición vehicular y los largos reales y salen al flujo de saturación; las cifras de los paneles salen del modelo.</p>
+  </footer>
+</main>
