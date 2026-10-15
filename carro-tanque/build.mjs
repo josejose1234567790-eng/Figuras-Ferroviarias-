@@ -837,8 +837,8 @@ const SADDLE_F = G.frameOf([0, 0, C], [0, 0, 1], [0, 1, 0], [1, 0, 0]);
   // aro del volante: un tubo cerrado, para que se vea hueco entre los rayos
   const rim = Array.from({ length: 48 }, (_, i) => G.add3(WC, [1.9, 9.55 * Math.cos((i / 48) * Math.PI * 2), 9.55 * Math.sin((i / 48) * Math.PI * 2)]));
   pipe("f.volante", rim, 0.6, { closed: true, maxLength: 8, owner: "f.volante" });
-  box("f.acodada", [304.5, 12, 33], [308.5, 17, 37], { tone: "hi", bevel: 0.3 });
-  pipe("f.cadena", [[306.5, 15.6, HB.z0], [306.5, 15.6, 37]], 0.5, { maxLength: 40, tone: "mid", rings: { pitch: 0.9, fade: [0.05, 0.5], tone: "hi" }, free: [true, true] });
+  box("f.acodada", [304.5, 12, 35.2], [308.5, 17, 39.2], { tone: "hi", bevel: 0.3 });
+  pipe("f.cadena", [[306.5, 15.6, HB.z0], [306.5, 15.6, 39.2]], 0.5, { maxLength: 40, tone: "mid", rings: { pitch: 0.9, fade: [0.05, 0.5], tone: "hi" }, free: [true, true] });
   L2.frenos = { anchor: "f.deposito", order: ["fB.zapata0N", "fB.zapata0F", "fB.zapata1N", "fB.zapata1F", "fB.cabeza0N", "fB.cabeza0F", "fB.cabeza1N", "fB.cabeza1F", "fB.cilindro", "fB.varilla", "fB.ajustador", "fB.palanca0", "fB.palanca1", "fB.viga0", "fB.viga1", "f.mangueraB", "f.mangueraA", "f.llaveB", "f.llaveA", "f.soportes", "f.tuberia", "f.valvula", "f.deposito", "f.volante", "f.frenoMano", "f.acodada", "f.cadena", "f.soporteFreno"] };
 }
 
@@ -888,8 +888,9 @@ for (const [end, sx] of [["A", -1], ["B", 1]]) {
   const [k0, k1] = span(328.5, 331.5);
   box(id("llaveN"), [k0, SILL.web[1], 32], [k1, 15.4, 37], { tone: "hi", bevel: 0.3 });
   box(id("llaveF"), [k0, -15.4, 32], [k1, -SILL.web[1], 37], { tone: "hi", bevel: 0.3 });
-  const [c0, c1] = span(339, 343);
-  box(id("soporte"), [c0, -5, 29], [c1, 5, 31], { tone: "mid" });
+  // el soporte entra en la boca de la cara de choque y se apoya en sus mejillas
+  const [c0, c1] = span(339, 346);
+  box(id("soporte"), [c0, -7.6, 29], [c1, 7.6, 31], { tone: "mid" });
 }
 
 // ---------------------------------------------------------------------------
@@ -1294,7 +1295,8 @@ if (AUDIT) {
   for (const [label, R] of runs) {
     // tubería y mangueras pasan por delante de las almas de la viga, a 16–20 unidades de profundidad: revisado a 4×
     const CROWD_OK = [["f.tuberia*", "eA.viga*"], ["f.tuberia*", "eB.viga*"], ["f.manguera*", "eA.viga*"], ["f.manguera*", "eB.viga*"], ["f.cadena*", "eB.viga*"], ["f.mangueraB*", "bB.eje1*"]];
-    const result = A.audit(R, P, { crowd: CROWD_OK });
+    // el borde del escudo A asoma media unidad alrededor del cabezal; pintado antes que la chaqueta se ve bien: revisado a 4×
+    const result = A.audit(R, P, { crowd: CROWD_OK, allow: [["t.escudoA", "t.chaqueta*"]] });
     const n = A.failures(result);
     console.log(`\n=== ${label}: ${n} problema(s)`);
     if (n) console.log(A.report(result));
