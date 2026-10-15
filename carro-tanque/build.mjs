@@ -115,10 +115,10 @@ function put(pid, ref, svg, shapes, { bias = 0, ride, mat, name: given, route, c
 }
 // Tubos y cadenas: trozos ordenables por profundidad; la ruta se registra para holguras, extremos y pliegues.
 const ROUTES = [];
-function pipe(pid, points, r, { tone = "hi", gaps = [], maxLength = 22, owner, touch, bundle, limp = false, free = [false, false], rims, ends = [true, true], caps = true, rings, bias = 0, ride } = {}) {
+function pipe(pid, points, r, { tone = "hi", gaps = [], maxLength = 22, owner, touch, bundle, limp = false, free = [false, false], rims, ends = [true, true], caps = true, rings, bias = 0, ride, closed = false } = {}) {
   const name = nameFor(`${pid}.tubo`);
-  ROUTES.push({ pid, name, points, r, ride, opts: { owner: owner ?? name, touch, bundle, limp, gaps, free, rims, ends } });
-  tubePieces(points, r, P, { maxLength, gaps, caps, rings }).forEach((piece, i) => put(pid, piece.mid, tubeSvg(piece, { tone }), [A.tube(piece.points, piece.radii, { owner: owner ?? name })], { name: `${name}:${i}`, route: name, chunk: i, bias, ride }));
+  ROUTES.push({ pid, name, points, r, ride, opts: { owner: owner ?? name, touch, bundle, limp, gaps, free, rims, ends, closed } });
+  tubePieces(points, r, P, { maxLength, gaps, caps, rings, closed }).forEach((piece, i) => put(pid, piece.mid, tubeSvg(piece, { tone }), [A.tube(piece.points, piece.radii, { owner: owner ?? name })], { name: `${name}:${i}`, route: name, chunk: i, bias, ride }));
   return name;
 }
 // Una pieza hecha de varios sólidos pequeños, pintados de atrás hacia adelante dentro del mismo grupo.
@@ -833,7 +833,10 @@ const SADDLE_F = G.frameOf([0, 0, C], [0, 0, 1], [0, 1, 0], [1, 0, 0]);
     const c = G.add3(WC, [1.9, 0, 0]);
     return sDisc(G.frameAlong(c, d), 1.4, 9.05, 0.45, { tone: "hi" });
   });
-  multi("f.volante", [sDisc(WF, 0, 2.6, 1.4, { tone: "hi" }), ...spokes, { svg: S(G.ringBand(1.3, 2.5, 9.0, 10.2, WF, P), { tone: "hi" }), shape: A.ring(WF, 1.3, 2.5, 9.0, 10.2), at: G.add3(WC, [1.9, 0, 0]) }]);
+  multi("f.volante", [sDisc(WF, 0, 2.6, 1.4, { tone: "hi", owner: "f.volante" }), ...spokes.map((sp) => ((sp.shape.owner = "f.volante"), sp))]);
+  // aro del volante: un tubo cerrado, para que se vea hueco entre los rayos
+  const rim = Array.from({ length: 48 }, (_, i) => G.add3(WC, [1.9, 9.55 * Math.cos((i / 48) * Math.PI * 2), 9.55 * Math.sin((i / 48) * Math.PI * 2)]));
+  pipe("f.volante", rim, 0.6, { closed: true, maxLength: 8, owner: "f.volante" });
   box("f.acodada", [304.5, 12, 33], [308.5, 17, 37], { tone: "hi", bevel: 0.3 });
   pipe("f.cadena", [[306.5, 15.6, HB.z0], [306.5, 15.6, 37]], 0.5, { maxLength: 40, tone: "mid", rings: { pitch: 0.9, fade: [0.05, 0.5], tone: "hi" }, free: [true, true] });
   L2.frenos = { anchor: "f.deposito", order: ["fB.zapata0N", "fB.zapata0F", "fB.zapata1N", "fB.zapata1F", "fB.cabeza0N", "fB.cabeza0F", "fB.cabeza1N", "fB.cabeza1F", "fB.cilindro", "fB.varilla", "fB.ajustador", "fB.palanca0", "fB.palanca1", "fB.viga0", "fB.viga1", "f.mangueraB", "f.mangueraA", "f.llaveB", "f.llaveA", "f.soportes", "f.tuberia", "f.valvula", "f.deposito", "f.volante", "f.frenoMano", "f.acodada", "f.cadena", "f.soporteFreno"] };
