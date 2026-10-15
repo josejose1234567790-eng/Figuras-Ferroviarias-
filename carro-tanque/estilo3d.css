@@ -1,0 +1,10 @@
+/* Versión 3D */
+body { margin: 0; background: var(--anatomy-page); color: var(--anatomy-text); font: 14px/1.6 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; }
+*, *::before, *::after { box-sizing: border-box; }
+.iso-page { width: min(1320px, 100% - 32px); margin: 28px auto 72px; }
+.ct-stage3 { position: relative; aspect-ratio: 1280 / 640; min-height: 320px; overflow: hidden; border-radius: 6px; background: linear-gradient(#eef1f3, #f7f6f2 70%); }
+.ct-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; cursor: grab; }
+.ct-canvas:active { cursor: grabbing; }
+.ct-orbit-hint { position: absolute; left: 10px; bottom: 8px; font: 11px/1.4 var(--anatomy-mono); color: var(--anatomy-muted); background: rgba(251, 251, 250, .8); padding: 3px 8px; border-radius: 6px; }
+.ct-reset { font: inherit; color: var(--ct-accent); background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; }
+@media (max-width: 760px) { .ct-stage3 { aspect-ratio: 4 / 3; } }

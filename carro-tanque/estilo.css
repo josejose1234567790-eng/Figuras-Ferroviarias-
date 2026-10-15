@@ -134,3 +134,5 @@
 .dl-t { font: 600 10.5px/1 ui-sans-serif, system-ui, sans-serif; fill: #1b1b1d; paint-order: stroke; stroke: #fbfbfa; stroke-width: 3px; }
 .dl-en { font: 9px/1 ui-monospace, Menlo, monospace; fill: #6b6b70; paint-order: stroke; stroke: #fbfbfa; stroke-width: 3px; }
 .dl-cap { font: 600 10px/1 ui-sans-serif, system-ui, sans-serif; fill: #4a3508; }
+.ct-switch { margin: 0 0 10px; font-size: 13px; }
+.ct-switch a { color: var(--ct-accent); font-weight: 600; }

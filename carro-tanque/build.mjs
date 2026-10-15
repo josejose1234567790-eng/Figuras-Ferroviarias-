@@ -1283,10 +1283,92 @@ const SRC = {
 };
 const rows = MEDIDAS.map(([what, val, src]) => `<tr><th scope="row">${what}</th><td>${val}</td><td>${src ? `<a href="${SRC[src][1]}" rel="noopener">${SRC[src][0]}</a>` : "aproximado"}</td></tr>`).join("");
 const caption = `<figcaption class="ct-caption"><p>Carro tanque DOT-117J100W para líquidos inflamables (diésel, gasolina): tanque con virola de 9/16 in, protección térmica y chaqueta, escudos de cabezal de altura completa, accesorios superiores dentro de una caja protectora y válvula inferior protegida. Dibujado a escala real con trocha de 1 435 mm y ruedas de 36 in; las medidas sin fuente están marcadas como aproximadas. Fuentes adicionales: <a href="https://www.gatx.com/products/large-capacity-general-service-tank-cars-25k/" rel="noopener">GATX, DOT-117J</a>; <a href="https://www.phmsa.dot.gov/regulations/title49/interp/15-0133" rel="noopener">PHMSA, interpretación 15-0133</a>.</p><table class="ct-table"><thead><tr><th scope="col">Medida</th><th scope="col">Valor</th><th scope="col">Fuente</th></tr></thead><tbody>${rows}</tbody></table></figcaption>`;
-const body = `<header class="ct-head"><p class="ct-eyebrow">Capacitación técnica · material rodante</p><h1>Carro tanque DOT-117 para combustibles líquidos</h1><p class="ct-lede">Ocho ensambles y ${new Set(Object.values(PARTS).filter((p) => p.asm !== "via" && p.type !== "corte").map((p) => p.type)).size} tipos de pieza, armados en el orden real de montaje. Separa los ensambles, abre cada uno en sus piezas, sigue el montaje paso a paso o corta el tanque para ver su interior.</p></header><figure class="iso-figure ct"><div class="iso-plate">${corners}<div class="ct-bar" role="group" aria-label="Modo de vista">${modes}</div><div class="ct-stage" tabindex="0" role="group" aria-label="Carro tanque DOT-117. Flechas: abrir el ensamble siguiente o anterior (en paso a paso, avanzar o retroceder). Espacio: separar o juntar los ensambles. Escape: volver al carro armado.">${backSvg}${frontSvg}</div><span class="ct-live" aria-live="polite" data-live></span></div>${steps}<div class="ct-below"><nav class="ct-asms" aria-label="Ensambles"><ol>${asmList}</ol></nav><aside class="ct-info" data-info aria-live="polite"></aside></div>${caption}</figure>`;
+const SWITCH_3D = `<p class="ct-switch"><a href="carro-tanque-3d.html">Ver en 3D: girar el carro</a></p>`;
+const SWITCH_2D = `<p class="ct-switch"><a href="carro-tanque.html">Ver la versión isométrica</a></p>`;
+const body = `<header class="ct-head">${SWITCH_3D}<p class="ct-eyebrow">Capacitación técnica · material rodante</p><h1>Carro tanque DOT-117 para combustibles líquidos</h1><p class="ct-lede">Ocho ensambles y ${new Set(Object.values(PARTS).filter((p) => p.asm !== "via" && p.type !== "corte").map((p) => p.type)).size} tipos de pieza, armados en el orden real de montaje. Separa los ensambles, abre cada uno en sus piezas, sigue el montaje paso a paso o corta el tanque para ver su interior.</p></header><figure class="iso-figure ct"><div class="iso-plate">${corners}<div class="ct-bar" role="group" aria-label="Modo de vista">${modes}</div><div class="ct-stage" tabindex="0" role="group" aria-label="Carro tanque DOT-117. Flechas: abrir el ensamble siguiente o anterior (en paso a paso, avanzar o retroceder). Espacio: separar o juntar los ensambles. Escape: volver al carro armado.">${backSvg}${frontSvg}</div><span class="ct-live" aria-live="polite" data-live></span></div>${steps}<div class="ct-below"><nav class="ct-asms" aria-label="Ensambles"><ol>${asmList}</ol></nav><aside class="ct-info" data-info aria-live="polite"></aside></div>${caption}</figure>`;
 const page = k.pageHtml({ title: "Carro tanque DOT-117", theme: "light", body: `<style>${CSS}</style>${body}`, script: kitScript() + LIVE, width: 1320 }).replace('lang="en"', 'lang="es"');
 const OUT = join(HERE, "..", "carro-tanque.html");
 if (!ONLY) writeFileSync(OUT, page);
+
+// ---------------------------------------------------------------------------
+// Versión 3D (three.js): las mismas formas que audita el skill, convertidas en mallas.
+// Los vectores de despiece, los resortes y el orden de montaje son los mismos de la versión isométrica.
+{
+  const r3 = (v) => Math.round(v * 1000) / 1000;
+  const v3 = (p) => p.map(r3);
+  const frame = (F) => ({ o: v3(F.o), a: v3(F.a), u: v3(F.u), v: v3(F.v) });
+  const isHalf = (c) => c && c.name === "tanque.semiespacio";
+  function ser(shape) {
+    let out;
+    if (shape.kind === "body") out = { k: "b", ...frame(shape.F), p: shape.poly.map(([s, r]) => [r3(s), r3(r)]) };
+    else if (shape.kind === "prism") out = { k: "p", ...frame(shape.F), p: shape.poly.map(([x, y]) => [r3(x), r3(y)]), s0: r3(shape.s0), s1: r3(shape.s1) };
+    else if (shape.kind === "box") out = { k: "x", o: v3(shape.o), axes: shape.axes.map(v3), half: v3(shape.half) };
+    else if (shape.kind === "ball") out = { k: "s", o: v3(shape.o), r: r3(shape.r) };
+    else if (shape.kind === "tube") out = { k: "t", p: shape.points.map(v3), r: r3(shape.radii[0]) };
+    else return null;
+    // mitades de chaqueta y aislamiento: plano por el eje (se recorta en la GPU)
+    const half = shape.cut && [shape.cut].flat().find(isHalf);
+    if (half) {
+      const side = G.dot3(G.sub3(half.o, [0, 0, C]), SPLIT_N) < 0 ? 1 : -1;
+      out.clip = v3(G.mul3(SPLIT_N, side));
+    }
+    return out;
+  }
+  const seenFront = new Set();
+  const items3 = [];
+  for (const it of ITEMS) {
+    // la caja protectora se dibujó dos veces (mitad trasera y delantera) para el pintor: en 3D basta una
+    if (it.pid === "a.caja") {
+      if (seenFront.has("a.caja")) continue;
+      seenFront.add("a.caja");
+    }
+    const p = PARTS[it.pid];
+    const shapes = it.shapes.map(ser).filter(Boolean);
+    if (it.pid === "a.caja") shapes.forEach((s) => delete s.clip);
+    const coil = p.type === "resortes";
+    items3.push({ p: it.pid, t: p.type, a: it.asm, r: it.ride, r2: p.ride2 ?? it.pid, m: it.mat ?? p.mat ?? "acero", x1: !p.l1, x2: !p.l2, coil, s: shapes });
+  }
+  const ties = STATIC_SHAPES.filter((s) => s.kind === "prism").map((s) => {
+    const xs = s.poly.map((q) => q[0]);
+    const ys = s.poly.map((q) => q[1]);
+    return [r3(Math.min(...xs)), r3(Math.max(...xs)), r3(Math.min(...ys)), r3(Math.max(...ys)), r3(s.s0), r3(s.s1)];
+  });
+  const liquid = [];
+  for (let i = 0; i <= 160; i++) {
+    const s = -SHELL_IN.tip + (2 * SHELL_IN.tip * i) / 160;
+    liquid.push([r3(s), r3(SHELL_IN.radius(s))]);
+  }
+  const DATA3 = {
+    ...DATA,
+    items: items3,
+    v2: Object.fromEntries(Object.entries(PARTS).map(([id, p]) => [id, p.v2])),
+    ties,
+    C,
+    RJ,
+    split: v3(SPLIT_N),
+    liquid,
+    liquidZ: r3(LIQUID_Z),
+    placards: [[-120, RJ + 0.52, 112, 1], [-120, -RJ - 0.52, 112, -1]],
+    cut3dHide: ["s.escaleraN", "s.agarraderaN", "s.placaN"],
+    cut3dShow: ["t.aislamientoSup", "t.aislamientoInf", "t.virola", "t.cabezalA", "t.cabezalB", "a.buzo"],
+    cut3dClip: ["t.chaquetaSup", "t.chaquetaInf", "t.aislamientoSup", "t.aislamientoInf", "t.virola", "t.cabezalA", "t.cabezalB", "t.escudoA", "t.escudoB", "t.boquilla", "t.sumidero", "t.placaA", "t.placaB", "a.caja", "a.tapaCaja", "a.tapa", "a.tornillos", "d.valvula"],
+  };
+  const VENDOR = join(HERE, "..", "cambio-de-via", "vendor");
+  const classic = (src, name) => `(() => {\n${src.replace(/import\s*\{([\s\S]*?)\}\s*from\s*'three';/, "const {$1} = THREE;").replace(/^export\s*\{[^}]*\};?\s*$/m, "")}\nwindow.${name} = ${name};\n})();`;
+  const three = readFileSync(join(VENDOR, "three.min.js"), "utf8");
+  const orbit = classic(readFileSync(join(VENDOR, "OrbitControls.js"), "utf8"), "OrbitControls");
+  const APP3 = readFileSync(join(HERE, "app3d.js"), "utf8").replace("__DATA__", JSON.stringify(DATA3));
+  const safe = (js) => js.replace(/<\/script/gi, "<\\/script");
+  const stage3 = `<div class="ct-stage ct-stage3" tabindex="0" role="group" aria-label="Carro tanque DOT-117 en 3D. Arrastra para girar, rueda o pellizco para acercar, clic derecho o dos dedos para desplazar. Flechas: abrir el ensamble siguiente o anterior. Espacio: separar o juntar. Escape: volver al carro armado."><canvas class="ct-canvas" aria-hidden="true"></canvas><div class="ct-orbit-hint">Arrastra para girar · rueda para acercar · <button type="button" class="ct-reset" data-reset>Vista inicial</button></div></div>`;
+  const corners3 = corners.replace("Fig 1", "Fig 1 · 3D");
+  const body3 = body.replace(/<div class="ct-stage"[\s\S]*?<\/svg><\/div>/, stage3).replace(corners, corners3).replace(SWITCH_3D, SWITCH_2D);
+  const CSS3 = readFileSync(join(HERE, "estilo3d.css"), "utf8");
+  const page3 = `<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Carro tanque DOT-117 · 3D</title><style>${k.ISO_CSS}</style><style>${CSS}${CSS3}</style></head><body class="iso" data-theme="light"><main class="iso-page">${body3}</main><script>${safe(three)}</script><script>${safe(orbit)}</script><script>${safe(APP3)}</script></body></html>`;
+  if (!ONLY) {
+    writeFileSync(join(HERE, "..", "carro-tanque-3d.html"), page3);
+    console.log("escrito carro-tanque-3d.html", `${(page3.length / 1024).toFixed(0)} KB`, `${items3.length} ítems`);
+  }
+}
 console.log("escrito carro-tanque.html", `${(page.length / 1024).toFixed(0)} KB`, `${ITEMS.length} ítems`, `${Object.keys(PARTS).length} piezas`);
 
 if (AUDIT) {
