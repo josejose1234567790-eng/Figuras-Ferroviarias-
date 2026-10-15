@@ -19,7 +19,7 @@ const modeloClassic = `window.MODELO = (() => {\n${modelo.replace(/^export\s+/gm
 const three = read(join(VENDOR, "three.min.js"));
 const orbit = classic(read(join(VENDOR, "OrbitControls.js")), "OrbitControls");
 const sky = classic(read(join(VENDOR, "Sky.js")), "Sky");
-const parts = ["escena.js", "vehiculos.js", "tren.js", "app.js"].map((f) => {
+const parts = ["escena.js", "vehiculos.js", "tren.js", "paneles.js", "app.js"].map((f) => {
   try {
     return read(join(HERE, f));
   } catch {
