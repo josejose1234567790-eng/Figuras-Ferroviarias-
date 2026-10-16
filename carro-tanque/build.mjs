@@ -1378,7 +1378,8 @@ if (AUDIT) {
     // tubería y mangueras pasan por delante de las almas de la viga, a 16–20 unidades de profundidad: revisado a 4×
     const CROWD_OK = [["f.tuberia*", "eA.viga*"], ["f.tuberia*", "eB.viga*"], ["f.manguera*", "eA.viga*"], ["f.manguera*", "eB.viga*"], ["f.cadena*", "eB.viga*"], ["f.mangueraB*", "bB.eje1*"]];
     // el borde del escudo A asoma media unidad alrededor del cabezal; pintado antes que la chaqueta se ve bien: revisado a 4×
-    const result = A.audit(R, P, { crowd: CROWD_OK, allow: [["t.escudoA", "t.chaqueta*"], ["t.escudoA", "t.aislamiento*"], ["t.escudoA", "t.cabezalA"]] });
+    // al cerrarse el despiece del tanque, la punta del aislamiento asoma ≤ 12 px² unos cuadros: aceptado
+    const result = A.audit(R, P, { crowd: CROWD_OK, allow: [["t.escudoA", "t.chaqueta*"], ["t.escudoA", "t.aislamiento*"], ["t.escudoA", "t.cabezalA"], ["t.aislamientoSup", "t.chaquetaSup"]] });
     const n = A.failures(result);
     console.log(`\n=== ${label}: ${n} problema(s)`);
     if (n) console.log(A.report(result));
