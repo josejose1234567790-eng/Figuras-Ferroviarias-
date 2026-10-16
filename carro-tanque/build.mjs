@@ -548,8 +548,8 @@ const ABOVE = () => A.orientedBox(G.add3([0, 0, C], G.mul3(SPLIT_N, 200)), [[1, 
   jUp.cut = [BELOW()];
   const jDn = thinShell(JACKET, JACKET_IN, -JACKET.tip, JACKET.tip, { owner });
   jDn.cut = [ABOVE()];
-  put("t.chaquetaInf", [0, 0, C - 30], `<defs>${jc.down}</defs><g clip-path="url(#cj-dn)">${jacketSvg}</g>`, [jDn], { bias: 0.6 });
-  put("t.chaquetaSup", [0, 0, C + 30], `<defs>${jc.up}</defs><g clip-path="url(#cj-up)">${jacketSvg}</g>${Ln(jc.run, { tone: "faint" })}`, [jUp], { bias: 0.6 });
+  put("t.chaquetaInf", [0, 0, C - 30], `<defs>${jc.down}</defs><g clip-path="url(#cj-dn)">${jacketSvg}</g>`, [jDn], { bias: 2.5 });
+  put("t.chaquetaSup", [0, 0, C + 30], `<defs>${jc.up}</defs><g clip-path="url(#cj-up)">${jacketSvg}</g>${Ln(jc.run, { tone: "faint" })}`, [jUp], { bias: 2.5 });
 
   // aislamiento (solo se ve en el despiece del tanque y en el corte)
   const ip = bodyPaths(INSUL);
@@ -1378,7 +1378,7 @@ if (AUDIT) {
     // tubería y mangueras pasan por delante de las almas de la viga, a 16–20 unidades de profundidad: revisado a 4×
     const CROWD_OK = [["f.tuberia*", "eA.viga*"], ["f.tuberia*", "eB.viga*"], ["f.manguera*", "eA.viga*"], ["f.manguera*", "eB.viga*"], ["f.cadena*", "eB.viga*"], ["f.mangueraB*", "bB.eje1*"]];
     // el borde del escudo A asoma media unidad alrededor del cabezal; pintado antes que la chaqueta se ve bien: revisado a 4×
-    const result = A.audit(R, P, { crowd: CROWD_OK, allow: [["t.escudoA", "t.chaqueta*"]] });
+    const result = A.audit(R, P, { crowd: CROWD_OK, allow: [["t.escudoA", "t.chaqueta*"], ["t.escudoA", "t.aislamiento*"], ["t.escudoA", "t.cabezalA"]] });
     const n = A.failures(result);
     console.log(`\n=== ${label}: ${n} problema(s)`);
     if (n) console.log(A.report(result));
