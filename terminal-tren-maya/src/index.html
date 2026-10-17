@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Terminal de carga Tren Maya · Simulador 3D</title>
+    <style>
+      :root {
+        --vino: rgb(156, 33, 72);
+        --verde: rgb(21, 91, 78);
+        --panel: rgba(14, 18, 20, 0.72);
+        --borde: rgba(255, 255, 255, 0.12);
+        --texto: #e9ecea;
+        --tenue: #a9b3b0;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; height: 100%; overflow: hidden; background: #0d1112; color: var(--texto); font-family: "Segoe UI", Roboto, Arial, sans-serif; }
+      #escena { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+      .panel { position: fixed; background: var(--panel); backdrop-filter: blur(6px); border: 1px solid var(--borde); border-radius: 10px; }
+      #titulo { top: 14px; left: 14px; padding: 10px 16px 10px 14px; border-left: 4px solid var(--vino); max-width: calc(100vw - 28px); }
+      #titulo h1 { margin: 0; font-size: 15px; font-weight: 600; letter-spacing: 0.02em; }
+      #titulo p { margin: 2px 0 0; font-size: 12px; color: var(--tenue); }
+      #herramientas { top: 14px; right: 14px; padding: 8px; display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; max-width: 60vw; }
+      button { font: inherit; font-size: 13px; color: var(--texto); background: rgba(255, 255, 255, 0.06); border: 1px solid var(--borde); border-radius: 7px; padding: 7px 11px; cursor: pointer; }
+      button:hover { background: rgba(255, 255, 255, 0.12); }
+      button.activo { background: var(--verde); border-color: rgba(255, 255, 255, 0.25); }
+      #vistas { left: 14px; bottom: 14px; padding: 8px; display: flex; flex-direction: column; gap: 5px; max-height: 60vh; overflow: auto; }
+      #vistas::before { content: "Cámaras"; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--tenue); padding: 2px 4px; }
+      #vistas button { text-align: left; }
+      #ficha { right: 14px; bottom: 14px; width: min(360px, calc(100vw - 28px)); padding: 14px 16px; border-top: 3px solid var(--verde); }
+      #ficha h2 { margin: 0 0 6px; font-size: 15px; }
+      #ficha p { margin: 0; font-size: 13px; line-height: 1.45; color: #d4dad8; }
+      #ficha-cerrar { position: absolute; top: 8px; right: 8px; padding: 2px 8px; }
+      #fps { position: fixed; right: 16px; top: 64px; font-size: 11px; color: var(--tenue); }
+      #carga { position: fixed; inset: 0; display: grid; place-items: center; background: #0d1112; z-index: 10; transition: opacity 0.6s; }
+      #carga.oculto { opacity: 0; pointer-events: none; }
+      #carga div { text-align: center; }
+      #carga strong { display: block; font-size: 18px; margin-bottom: 8px; border-bottom: 3px solid var(--vino); padding-bottom: 8px; }
+      #carga span { color: var(--tenue); font-size: 13px; }
+      body.sin-ui .panel, body.sin-ui #fps { display: none !important; }
+      body.presentacion button { font-size: 16px; padding: 11px 16px; }
+      body.presentacion #titulo h1 { font-size: 19px; }
+      @media (max-width: 700px) {
+        #herramientas { top: auto; bottom: 14px; right: 14px; max-width: 50vw; }
+        #vistas { max-height: 40vh; }
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="escena"></canvas>
+    <div id="titulo" class="panel">
+      <h1>Terminal ferroviaria de carga · Tren Maya</h1>
+      <p>Simulador visual 3D · Patio de operación</p>
+    </div>
+    <div id="herramientas" class="panel">
+      <button data-calidad="alta">Calidad alta</button>
+      <button data-calidad="media">Calidad media</button>
+      <button id="btn-captura">Captura</button>
+      <button id="btn-pantalla">Presentación</button>
+    </div>
+    <div id="fps"></div>
+    <div id="vistas" class="panel"></div>
+    <div id="ficha" class="panel" hidden>
+      <button id="ficha-cerrar" aria-label="Cerrar">×</button>
+      <h2 id="ficha-titulo"></h2>
+      <p id="ficha-texto"></p>
+    </div>
+    <div id="carga"><div><strong>Terminal ferroviaria de carga · Tren Maya</strong><span id="carga-texto">Preparando escena…</span></div></div>
+    <script src="app.js"></script>
+  </body>
+</html>

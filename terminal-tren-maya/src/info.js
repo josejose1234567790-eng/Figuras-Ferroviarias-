@@ -1,0 +1,20 @@
+// Fichas breves que aparecen al hacer clic sobre un elemento.
+export const INFO = {
+  via: { titulo: "Vía férrea", texto: "Escantillón de 1,435 mm. Riel de 115/136 lb/yd sobre durmientes monobloque de concreto a cada 0.60 m con sujeción elástica. Balasto de caliza triturada con taludes." },
+  cambio: { titulo: "Cambio de vía n.º 8", texto: "Agujas móviles, sapo de acero al manganeso y contrarrieles. Se opera a mano desde la banderola; el disco verde indica vía directa y el rojo, vía desviada." },
+  banderola: { titulo: "Banderola del cambio", texto: "Aparato de maniobra manual con palanca y candado. Su disco muestra a distancia la posición de las agujas." },
+  tope: { titulo: "Tope de vía", texto: "Fin de vía con bastidor de acero y cabezal a la altura del enganche. Detiene el equipo que rebase el último punto de parada." },
+  descarrilador: { titulo: "Descarrilador", texto: "Dispositivo que protege el fin de vía o la vía principal: si un carro rueda sin control, lo saca del riel en un punto seguro." },
+  senal: { titulo: "Señal de entrada", texto: "Señal de mástil con tres aspectos: verde (vía libre), amarillo (precaución, prepararse para detenerse) y rojo (alto absoluto)." },
+  bascula: { titulo: "Báscula de vía", texto: "Plataforma de pesaje de 22 m en la vía de recibo, con caseta de operación e indicador digital visible desde la cabina. Paso máximo de 5 km/h." },
+  combustible: { titulo: "Estación de combustible", texto: "Dos tanques horizontales de diésel dentro de un dique de contención de concreto, patín de bombas e isla de despacho junto a la vía de servicios." },
+  arenero: { titulo: "Arenero", texto: "Tolva elevada que surte arena seca a los areneros de la locomotora para mejorar la adherencia de las ruedas al arrancar y frenar." },
+  fosa: { titulo: "Fosa de inspección", texto: "Fosa de 30 m entre rieles para revisar desde abajo bogíes, frenos y tracción de la locomotora." },
+  llenadera: { titulo: "Llenadera", texto: "Plataforma elevada y techada con 11 posiciones. Cada una tiene brazo articulado de llenado por domo, pasarela abatible, válvula y tierra física." },
+  caseta: { titulo: "Caseta del jefe de patio", texto: "Puesto de mando del patio: coordina recibo, clasificación, carga y despacho por radio con el personal y la tripulación." },
+  bodega: { titulo: "Almacén general", texto: "Bodega de lámina blanca con techo verde a dos aguas para refacciones, herramientas y equipo de protección." },
+  torre: { titulo: "Torre de iluminación", texto: "Torre de celosía de 30 m con reflectores para la operación nocturna del patio." },
+  cerca: { titulo: "Cerca perimetral", texto: "Malla ciclónica con alambre de púas. Acceso único controlado por la caseta de vigilancia." },
+  postes: { titulo: "Línea de energía", texto: "Postes de concreto con línea de media tensión que alimenta la terminal." },
+  selva: { titulo: "Selva baja caducifolia", texto: "Vegetación característica del norte de la península de Yucatán; en temporada de secas muchos árboles pierden el follaje." },
+};
