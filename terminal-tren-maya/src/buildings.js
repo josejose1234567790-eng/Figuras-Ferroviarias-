@@ -663,7 +663,7 @@ function warehouse() {
   // ventilas altas
   for (let px = -18; px <= 18; px += 6) box(1.8, 0.6, 0.06, mat.galv, px, 6.0, -d / 2 - 0.02, { parent: g, r: 0.01 });
   const lb = label(["ALMACÉN GENERAL"], { w: 9, h: 1.0, fg: "#155b4e" });
-  lb.position.set(-2, 7.55, -d / 2 - 0.04);
+  lb.position.set(-9.5, 7.55, -d / 2 - 0.04); // entre bajantes
   lb.rotation.y = Math.PI;
   g.add(lb);
   const ex = extinguisher();
