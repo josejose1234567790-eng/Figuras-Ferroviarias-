@@ -32,12 +32,17 @@ export function buildFacilities(scene) {
   root.name = "instalaciones";
   scene.add(root);
   const out = { info: [] };
-  root.add(entrySignal());
-  root.add(scale());
+  const sigE = mastSignal(SITE.senalEntrada.x, SITE.senalEntrada.z, 0, "SE-1");
+  const sigS = mastSignal(-650, -3.6, Math.PI, "SS-1");
+  sigS.userData.info = "senalSalida";
+  root.add(sigE, sigS);
+  const sc = scale();
+  root.add(sc);
   root.add(fuel());
   root.add(sandTower());
   root.add(pit());
-  root.add(loadingRack());
+  const rack = loadingRack();
+  root.add(rack);
   root.add(booth());
   root.add(warehouse());
   for (const [x, z] of SITE.torres) root.add(lightTower(x, z));
@@ -45,17 +50,18 @@ export function buildFacilities(scene) {
   root.add(power());
   root.add(crossing());
   root.add(safetyAround());
+  root.userData.refs = { signals: { entrada: sigE, salida: sigS }, indicator: sc.userData.indicator, rack: rack.userData.arms };
   return root;
 }
 
 // ---------- Señal de entrada de mástil (aspectos rojo / amarillo / verde)
-function entrySignal() {
+function mastSignal(x, z, ry, name) {
   const mat = M();
   const g = new THREE.Group();
   g.name = "señal";
   g.userData.info = "senal";
-  const { x, z } = SITE.senalEntrada;
   g.position.set(x, 0, z);
+  g.rotation.y = ry;
   box(1.2, 0.5, 1.2, mat.concrete, 0, -0.1, 0, { parent: g });
   cyl(0.1, 0.12, 7.0, mat.galv, 0, 0.4, 0, { parent: g, seg: 14 });
   // gabinete de control al pie
@@ -98,7 +104,7 @@ function entrySignal() {
   lad.rotation.y = Math.PI;
   g.add(lad);
   // placa de identificación
-  const id = label(["SE-1"], { w: 0.5, h: 0.25, bg: "#ffffff", fg: "#111", border: true });
+  const id = label([name], { w: 0.5, h: 0.25, bg: "#ffffff", fg: "#111", border: true });
   id.position.set(-0.13, 2.6, 0);
   id.rotation.y = -Math.PI / 2;
   g.add(id);

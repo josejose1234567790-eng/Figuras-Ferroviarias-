@@ -7,14 +7,14 @@ import { rng } from "./util.js";
 
 export const ROLES = {
   jefe: { nombre: "Jefe de patio", casco: 0xf2f2ee, ropa: 0x4a5a72, chaleco: 0x9c2148 },
-  maquinista: { nombre: "Maquinista", casco: 0x1f4f8c, ropa: 0x45597a, chaleco: 0xf26a1b },
-  conductor: { nombre: "Conductor de tren", casco: 0xf2c418, ropa: 0x45597a, chaleco: 0xf26a1b },
-  inspector: { nombre: "Inspector de carros", casco: 0xf2c418, ropa: 0x5c5f4a, chaleco: 0xc8e021 },
+  mayordomo: { nombre: "Mayordomo de patio", casco: 0xf2f2ee, ropa: 0x55606e, chaleco: 0x155b4e },
+  maqPatio: { nombre: "Maquinista de patio", casco: 0x1f4f8c, ropa: 0x45597a, chaleco: 0xf26a1b },
+  garPatio: { nombre: "Garrotero de patio", casco: 0xf2c418, ropa: 0x45597a, chaleco: 0xf26a1b },
+  inspector: { nombre: "Inspector de U. de A.", casco: 0xf2c418, ropa: 0x5c5f4a, chaleco: 0xc8e021 },
   bascula: { nombre: "Operador de báscula", casco: 0xf2f2ee, ropa: 0x6b6355, chaleco: 0xc8e021 },
+  maqCamino: { nombre: "Maquinista de camino", casco: 0x1f3a6e, ropa: 0x3f4d66, chaleco: 0xf26a1b },
+  garCamino: { nombre: "Garrotero de camino", casco: 0xf2c418, ropa: 0x3f4d66, chaleco: 0xf26a1b },
   llenadera: { nombre: "Operador de llenadera", casco: 0xf26a1b, ropa: 0x45597a, chaleco: 0xf26a1b },
-  combustible: { nombre: "Despachador de combustible", casco: 0xf26a1b, ropa: 0x5c5f4a, chaleco: 0xc8e021 },
-  seguridad: { nombre: "Supervisor de seguridad", casco: 0x155b4e, ropa: 0x4a5a72, chaleco: 0xc8e021 },
-  vigilante: { nombre: "Vigilante", casco: null, ropa: 0x3c4a36, chaleco: 0xc8e021 },
 };
 
 const SKIN = [0x8d5a3b, 0x9b6a48, 0x7a4b30, 0xa77655, 0x6e4329];
@@ -195,138 +195,133 @@ export class Person {
       this.legs.push({ th, kn, ft, s });
     }
     // utilería según el puesto
-    if (prop === "radio" || role === "jefe" || role === "conductor") {
+    if (prop === "radio" || ["jefe", "mayordomo", "maqPatio", "garPatio", "maqCamino", "garCamino"].includes(role)) {
       const rd = new THREE.BoxGeometry(0.03 * H, 0.08 * H, 0.02 * H);
       add(this.arms[1].el, rd, dark, 0.02 * H, -0.19 * H, 0);
     }
-    if (role === "seguridad") add(this.arms[0].el, new THREE.BoxGeometry(0.02 * H, 0.12 * H, 0.09 * H), mat("clip", () => std({ color: 0x8a6a40, roughness: 0.8 })), 0.03 * H, -0.18 * H, 0);
+    if (role === "inspector") {
+      add(this.arms[1].el, new THREE.CylinderGeometry(0.018 * H, 0.014 * H, 0.1 * H, 10), dark, 0.03 * H, -0.2 * H, 0);
+      this.lamp = add(this.arms[1].el, new THREE.CircleGeometry(0.015 * H, 12), mat("lampLens", () => std({ color: 0xfff6d8, emissive: 0xfff2c8, emissiveIntensity: 2 })), 0.03 * H, -0.25 * H, 0);
+      this.lamp.rotation.x = Math.PI / 2;
+    }
+    if (role === "mayordomo" || role === "bascula") add(this.arms[0].el, new THREE.BoxGeometry(0.02 * H, 0.12 * H, 0.09 * H), mat("clip", () => std({ color: 0x8a6a40, roughness: 0.8 })), 0.03 * H, -0.18 * H, 0);
     this.state = { mode: "idle", t: r() * 10, gesture: null, speed: 0, path: null, seg: 0, segS: 0 };
     this.phase = r() * Math.PI * 2;
     this.seed = seed;
   }
 
-  // Camina por una polilínea [[x,z],...] a 'speed' m/s (y fija del piso)
-  walk(path, { speed = 1.25, loop = false, y = 0 } = {}) {
-    this.state.mode = "walk";
-    this.state.path = path;
-    this.state.loop = loop;
-    this.state.speed = speed;
-    this.state.seg = 0;
-    this.state.segS = 0;
-    this.root.position.set(path[0][0], y, path[0][1]);
-    this.groundY = y;
-  }
-  stand(x, y, z, facing = 0) {
-    this.state.mode = "idle";
-    this.root.position.set(x, y, z);
-    this.root.rotation.y = facing;
-    this.groundY = y;
-  }
-  gesture(name) {
-    this.state.gesture = name;
-  }
-
-  update(dt) {
-    const S = this.state;
-    S.t += dt;
-    const t = S.t;
+  // Postura a partir del estado del guion: posición, rumbo, marcha acumulada (m) y ademán
+  pose(rec, t) {
     const H = this.H;
-    // postura base
-    let swing = 0;
-    let bob = 0;
-    if (S.mode === "walk" && S.path) {
-      const P = S.path;
-      let a = P[S.seg];
-      let b = P[(S.seg + 1) % P.length];
-      let L = Math.hypot(b[0] - a[0], b[1] - a[1]);
-      S.segS += S.speed * dt;
-      while (S.segS > L) {
-        S.segS -= L;
-        S.seg++;
-        if (S.seg >= P.length - 1) {
-          if (S.loop) S.seg = 0;
-          else {
-            S.seg = P.length - 2;
-            S.segS = L;
-            S.mode = "idle";
-            break;
-          }
-        }
-        a = P[S.seg];
-        b = P[S.seg + 1];
-        L = Math.hypot(b[0] - a[0], b[1] - a[1]);
-      }
-      const f = Math.min(1, S.segS / L);
-      this.root.position.x = a[0] + (b[0] - a[0]) * f;
-      this.root.position.z = a[1] + (b[1] - a[1]) * f;
-      const target = Math.atan2(-(b[1] - a[1]), b[0] - a[0]);
-      let d = target - this.root.rotation.y;
-      d = Math.atan2(Math.sin(d), Math.cos(d));
-      this.root.rotation.y += d * Math.min(1, dt * 6);
-      // ciclo de marcha: zancada ≈ 0.42·H por paso
-      const freq = S.speed / (0.42 * H) / 2;
-      S.cyc = (S.cyc || 0) + dt * freq * Math.PI * 2;
-      swing = Math.sin(S.cyc);
-      bob = Math.abs(Math.cos(S.cyc));
-    }
-    const walking = S.mode === "walk";
-    const k = walking ? 1 : 0;
+    this.root.visible = rec.vis !== false;
+    if (!this.root.visible) return;
+    this.root.position.set(rec.x, rec.y, rec.z);
+    this.root.rotation.y = rec.h;
+    const walking = !!rec.moving;
+    const cyc = ((rec.gait || 0) / (0.84 * H)) * Math.PI * 2;
+    const swing = walking ? Math.sin(cyc) : 0;
+    const bob = walking ? Math.abs(Math.cos(cyc)) : 1;
     this.hips.position.y = 0.53 * H - (walking ? 0.012 * H * (1 - bob) : 0) + Math.sin(t * 1.6 + this.phase) * 0.002 * H;
-    this.hips.rotation.y = swing * 0.08 * k;
-    this.spine.rotation.y = -swing * 0.12 * k;
-    this.spine.rotation.z = walking ? -0.05 : Math.sin(t * 0.5 + this.phase) * 0.01;
-    this.spine.rotation.x = 0;
-    this.neck.rotation.y = walking ? 0 : Math.sin(t * 0.3 + this.phase) * 0.35;
-    this.neck.rotation.z = 0;
+    this.hips.rotation.set(0, swing * 0.08, 0);
+    this.spine.rotation.set(0, -swing * 0.12, walking ? -0.05 : Math.sin(t * 0.5 + this.phase) * 0.01);
+    this.neck.rotation.set(0, walking ? 0 : Math.sin(t * 0.3 + this.phase) * 0.35, 0);
     for (const lg of this.legs) {
       const p = swing * lg.s;
-      lg.th.rotation.z = walking ? p * 0.45 : 0.02;
-      lg.kn.rotation.z = walking ? -Math.max(0, -Math.sin(S.cyc + (lg.s > 0 ? 0 : Math.PI)) ) * 0.75 - 0.05 : -0.03;
-      lg.ft.rotation.z = walking ? Math.max(0, p) * -0.25 : 0.01;
+      lg.th.rotation.set(0, 0, walking ? p * 0.45 : 0.02);
+      lg.kn.rotation.set(0, 0, walking ? -Math.max(0, -Math.sin(cyc + (lg.s > 0 ? 0 : Math.PI))) * 0.75 - 0.05 : -0.03);
+      lg.ft.rotation.set(0, 0, walking ? Math.max(0, p) * -0.25 : 0.01);
     }
     for (const ar of this.arms) {
       ar.sh.rotation.set(0.08 * ar.s, 0, walking ? -swing * ar.s * 0.4 : 0.05);
       ar.el.rotation.set(0, 0, walking ? 0.35 + Math.max(0, swing * ar.s) * 0.25 : 0.12);
     }
-    // ademanes (señales manuales del reglamento y uso de radio)
-    const g = S.gesture;
-    if (g === "inspeccion") {
-      this.spine.rotation.z = -0.45;
-      this.neck.rotation.z = -0.25;
+    const R = this.arms[1];
+    const Lf = this.arms[0];
+    const crouch = (k) => {
+      this.hips.position.y = (0.53 - 0.09 * k) * H;
+      this.spine.rotation.z = -0.35 * k;
       this.legs.forEach((lg) => {
-        lg.th.rotation.z = 0.35;
-        lg.kn.rotation.z = -0.55;
+        lg.th.rotation.z = 0.75 * k;
+        lg.kn.rotation.z = -1.35 * k;
+        lg.ft.rotation.z = 0.55 * k;
       });
-      this.hips.position.y = 0.5 * H;
-      this.arms[0].sh.rotation.set(0, 0, 0.9);
-      this.arms[0].el.rotation.set(0, 0, 0.3);
-    } else if (g === "radio") {
-      const R = this.arms[1];
-      R.sh.rotation.set(-0.15, 0, 1.15);
-      R.el.rotation.set(0, 0, 2.2);
-    } else if (g === "avanzar") {
-      // brazo arriba y abajo en vertical
-      const R = this.arms[1];
-      R.sh.rotation.set(-0.4, 0, 1.6 + Math.sin(t * 3.0) * 0.9);
-      R.el.rotation.set(0, 0, 0.2);
-    } else if (g === "alto") {
-      // brazo extendido moviéndose horizontalmente
-      const R = this.arms[1];
-      R.sh.rotation.set(-1.45 + Math.sin(t * 2.6) * 0.5, 0, 0.1);
-      R.el.rotation.set(0, 0, 0.05);
-    } else if (g === "retroceder") {
-      const R = this.arms[1];
-      R.sh.rotation.set(-1.2, 0, 1.0 + Math.sin(t * 2.4) * 0.6);
-      R.el.rotation.set(0, 0, 0.9 + Math.cos(t * 2.4) * 0.5);
-    } else if (g === "señalar") {
-      const R = this.arms[1];
-      R.sh.rotation.set(-0.2, 0, 1.4);
-      R.el.rotation.set(0, 0, 0.1);
-    } else if (g === "brazos") {
-      this.arms.forEach((a) => {
-        a.sh.rotation.set(0.25 * a.s, 0, 0.35);
-        a.el.rotation.set(0, 0, 1.6);
-      });
+    };
+    switch (rec.g) {
+      case "inspeccion":
+        crouch(0.55);
+        this.neck.rotation.z = -0.25;
+        Lf.sh.rotation.set(0, 0, 0.9);
+        Lf.el.rotation.set(0, 0, 0.3);
+        break;
+      case "lampara":
+        this.spine.rotation.z = -0.25;
+        this.neck.rotation.z = -0.35;
+        R.sh.rotation.set(-0.1, 0, 0.75 + Math.sin(t * 0.8) * 0.15);
+        R.el.rotation.set(0, 0, 0.35);
+        break;
+      case "llave": // cerrar la llave angular del tubo de freno
+        crouch(0.6);
+        R.sh.rotation.set(-0.2, 0, 0.95);
+        R.el.rotation.set(0, 0, 0.4 + Math.max(0, Math.sin(t * 2.0)) * 0.6);
+        break;
+      case "perno": // levantar la palanca del perno de enganche
+        this.spine.rotation.z = -0.2;
+        R.sh.rotation.set(-0.25, 0, 0.7 + Math.max(0, Math.sin(t * 1.6)) * 0.55);
+        R.el.rotation.set(0, 0, 0.6);
+        break;
+      case "palanca": // maniobra de la banderola
+        this.spine.rotation.z = -0.4;
+        R.sh.rotation.set(-0.15, 0, 1.0 + Math.sin(t * 1.4) * 0.45);
+        R.el.rotation.set(0, 0, 0.3);
+        Lf.sh.rotation.set(0.15, 0, 1.0 + Math.sin(t * 1.4) * 0.45);
+        Lf.el.rotation.set(0, 0, 0.3);
+        break;
+      case "escribir":
+        Lf.sh.rotation.set(0.2, 0, 0.55);
+        Lf.el.rotation.set(0, 0, 1.45);
+        R.sh.rotation.set(-0.15, 0, 0.5);
+        R.el.rotation.set(0, 0, 1.55 + Math.sin(t * 6) * 0.06);
+        this.neck.rotation.z = -0.3;
+        break;
+      case "sellar":
+        this.spine.rotation.z = -0.6;
+        this.neck.rotation.z = -0.3;
+        R.sh.rotation.set(-0.1, 0, 1.0);
+        R.el.rotation.set(0, 0, 0.5 + Math.sin(t * 3) * 0.2);
+        Lf.sh.rotation.set(0.1, 0, 1.0);
+        Lf.el.rotation.set(0, 0, 0.5);
+        break;
+      case "entregar":
+        R.sh.rotation.set(-0.1, 0, 1.25);
+        R.el.rotation.set(0, 0, 0.35);
+        break;
+      case "radio":
+        R.sh.rotation.set(-0.15, 0, 1.15);
+        R.el.rotation.set(0, 0, 2.2);
+        break;
+      case "avanzar":
+        R.sh.rotation.set(-0.4, 0, 1.6 + Math.sin(t * 3.0) * 0.9);
+        R.el.rotation.set(0, 0, 0.2);
+        break;
+      case "alto":
+        R.sh.rotation.set(-1.45 + Math.sin(t * 2.6) * 0.5, 0, 0.1);
+        R.el.rotation.set(0, 0, 0.05);
+        break;
+      case "retroceder":
+        R.sh.rotation.set(-1.2, 0, 1.0 + Math.sin(t * 2.4) * 0.6);
+        R.el.rotation.set(0, 0, 0.9 + Math.cos(t * 2.4) * 0.5);
+        break;
+      case "señalar":
+        R.sh.rotation.set(-0.2, 0, 1.4);
+        R.el.rotation.set(0, 0, 0.1);
+        break;
+      case "brazos":
+        this.arms.forEach((a) => {
+          a.sh.rotation.set(0.25 * a.s, 0, 0.35);
+          a.el.rotation.set(0, 0, 1.6);
+        });
+        break;
+      default:
     }
   }
 }
@@ -372,7 +367,7 @@ export class Labels {
       v.y += it.offset;
       const dist = v.distanceTo(camera.position);
       v.project(camera);
-      const show = !it.hidden && v.z < 1 && v.z > -1 && dist < 220 && Math.abs(v.x) < 1.1 && Math.abs(v.y) < 1.1;
+      const show = it.obj.visible && !it.hidden && v.z < 1 && v.z > -1 && dist < 220 && Math.abs(v.x) < 1.1 && Math.abs(v.y) < 1.1;
       it.d.style.display = show ? "" : "none";
       if (!show) continue;
       it.d.style.transform = `translate(${((v.x + 1) / 2) * w}px, ${((1 - v.y) / 2) * h}px) translate(-50%, -100%)`;
@@ -381,53 +376,17 @@ export class Labels {
   }
 }
 
-export function buildPeople(scene, labels, { RAIL_TOP, deckY }) {
+export function buildPeople(scene, labels) {
   const group = new THREE.Group();
   group.name = "personal";
   scene.add(group);
-  const people = [];
-  const put = (role, opts, place) => {
-    const p = new Person(role, opts);
-    place(p);
+  const people = {};
+  const heights = { jefe: 1.74, mayordomo: 1.7, maqPatio: 1.72, garPatio: 1.78, inspector: 1.68, bascula: 1.66, maqCamino: 1.75, garCamino: 1.8, llenadera: 1.72 };
+  Object.keys(ROLES).forEach((role, i) => {
+    const p = new Person(role, { height: heights[role], seed: i + 1 });
     group.add(p.root);
     labels.add(p.root, p.nombre, p.H + 0.45);
-    people.push(p);
-    return p;
-  };
-  // jefe de patio frente a la caseta, hablando por radio
-  put("jefe", { height: 1.74, seed: 1 }, (p) => {
-    p.stand(-641, 0.0, 22.5, Math.PI / 2);
-    p.gesture("radio");
+    people[role] = p;
   });
-  // maquinista junto a la cabina de la TMY 2002
-  put("maquinista", { height: 1.7, seed: 2 }, (p) => p.stand(463.5, 0.0, -3.1, Math.PI));
-  // conductor dando señal de avanzar al costado del tren
-  put("conductor", { height: 1.78, seed: 3 }, (p) => {
-    p.stand(447, 0.0, -3.0, -Math.PI / 2 + 0.6);
-    p.gesture("avanzar");
-  });
-  // inspector de carros caminando a lo largo del tren
-  put("inspector", { height: 1.68, seed: 4 }, (p) => p.walk([[440, -3.1], [300, -3.1]], { speed: 1.1, loop: true }));
-  put("inspector", { height: 1.75, seed: 9 }, (p) => {
-    p.stand(431.4, 0.0, -3.2, Math.PI / 2);
-    p.gesture("inspeccion");
-  });
-  // operador de báscula en la puerta de su caseta
-  put("bascula", { height: 1.66, seed: 5 }, (p) => p.stand(-468.4, 0.33, 4.6, Math.PI / 2));
-  // operador de llenadera en la plataforma
-  put("llenadera", { height: 1.72, seed: 6 }, (p) => {
-    p.stand(28, deckY + 0.03, -36.9, -Math.PI / 2);
-    p.gesture("señalar");
-  });
-  // despachador en la isla de combustible
-  put("combustible", { height: 1.7, seed: 7 }, (p) => p.stand(40.5, 0.2, 9.0, Math.PI / 2));
-  // supervisor de seguridad al pie de la escalera de la llenadera
-  put("seguridad", { height: 1.8, seed: 8 }, (p) => {
-    p.stand(-36, 0.0, -41.5, -0.4);
-    p.gesture("brazos");
-  });
-  // vigilante en el acceso
-  put("vigilante", { height: 1.76, seed: 10 }, (p) => p.walk([[-664, 88], [-664, 95], [-656, 95], [-656, 88]], { speed: 0.8, loop: true }));
-  for (const p of people) p.update(0.01);
-  return { group, people, update: (dt) => people.forEach((p) => p.update(dt)) };
+  return { group, people };
 }

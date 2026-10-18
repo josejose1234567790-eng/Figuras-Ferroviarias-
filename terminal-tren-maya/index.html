@@ -8,62 +8,145 @@
       :root {
         --vino: rgb(156, 33, 72);
         --verde: rgb(21, 91, 78);
-        --panel: rgba(14, 18, 20, 0.72);
+        --panel: rgba(12, 16, 18, 0.7);
         --borde: rgba(255, 255, 255, 0.12);
         --texto: #e9ecea;
-        --tenue: #a9b3b0;
+        --tenue: #a7b1ae;
+        --esc: 1;
       }
       * { box-sizing: border-box; }
       html, body { margin: 0; height: 100%; overflow: hidden; background: #0d1112; color: var(--texto); font-family: "Segoe UI", Roboto, Arial, sans-serif; }
       #escena { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
-      .panel { position: fixed; background: var(--panel); backdrop-filter: blur(6px); border: 1px solid var(--borde); border-radius: 10px; }
-      #titulo { top: 14px; left: 14px; padding: 10px 16px 10px 14px; border-left: 4px solid var(--vino); max-width: calc(100vw - 28px); }
-      #titulo h1 { margin: 0; font-size: 15px; font-weight: 600; letter-spacing: 0.02em; }
-      #titulo p { margin: 2px 0 0; font-size: 12px; color: var(--tenue); }
-      #herramientas { top: 14px; right: 14px; padding: 8px; display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; max-width: 60vw; }
-      button { font: inherit; font-size: 13px; color: var(--texto); background: rgba(255, 255, 255, 0.06); border: 1px solid var(--borde); border-radius: 7px; padding: 7px 11px; cursor: pointer; }
-      button:hover { background: rgba(255, 255, 255, 0.12); }
+      .panel { position: fixed; background: var(--panel); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); border: 1px solid var(--borde); border-radius: 10px; }
+      button { font: inherit; font-size: calc(13px * var(--esc)); color: var(--texto); background: rgba(255, 255, 255, 0.06); border: 1px solid var(--borde); border-radius: 7px; padding: calc(6px * var(--esc)) calc(10px * var(--esc)); cursor: pointer; }
+      button:hover { background: rgba(255, 255, 255, 0.13); }
       button.activo { background: var(--verde); border-color: rgba(255, 255, 255, 0.25); }
-      #vistas { left: 14px; bottom: 14px; padding: 8px; display: flex; flex-direction: column; gap: 5px; max-height: 60vh; overflow: auto; }
-      #vistas::before { content: "Cámaras"; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--tenue); padding: 2px 4px; }
-      #vistas button { text-align: left; }
-      #ficha { right: 14px; bottom: 14px; width: min(360px, calc(100vw - 28px)); padding: 14px 16px; border-top: 3px solid var(--verde); }
-      #ficha h2 { margin: 0 0 6px; font-size: 15px; }
-      #ficha p { margin: 0; font-size: 13px; line-height: 1.45; color: #d4dad8; }
+      .etq { font-size: calc(10.5px * var(--esc)); text-transform: uppercase; letter-spacing: 0.08em; color: var(--tenue); }
+
+      /* ficha de escena */
+      #escena-panel { top: 14px; left: 14px; width: min(calc(430px * var(--esc)), calc(100vw - 28px)); padding: 12px 15px 13px; border-left: 4px solid var(--vino); }
+      #escena-panel .cab { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      #esc-fase { font-size: calc(12px * var(--esc)); font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #f0d6df; }
+      #esc-prop { font-size: calc(10.5px * var(--esc)); font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; background: var(--vino); color: #fff; padding: 2px 7px; border-radius: 4px; }
+      #esc-paso { margin-left: auto; font-size: calc(12px * var(--esc)); color: var(--tenue); }
+      #esc-actividad { margin: 7px 0 9px; font-size: calc(14.5px * var(--esc)); line-height: 1.38; font-weight: 500; }
+      #escena-panel dl { display: grid; grid-template-columns: auto 1fr; gap: 3px 10px; margin: 0; font-size: calc(12.5px * var(--esc)); }
+      #escena-panel dt { color: var(--tenue); }
+      #escena-panel dd { margin: 0; }
+
+      /* reloj y contadores */
+      #estado { top: 14px; right: 14px; padding: 10px 13px; display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap; justify-content: flex-end; max-width: calc(100vw - 28px - min(430px, 100vw)); }
+      #estado .bloque { display: flex; flex-direction: column; gap: 2px; }
+      #reloj { font-size: calc(22px * var(--esc)); font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: 0.02em; }
+      #hora { font-size: calc(12px * var(--esc)); color: var(--tenue); }
+      .cont { min-width: calc(62px * var(--esc)); text-align: right; }
+      .cont b { display: block; font-size: calc(20px * var(--esc)); font-variant-numeric: tabular-nums; }
+      .cont b small { font-size: 0.55em; color: var(--tenue); font-weight: 400; }
+
+      /* herramientas */
+      #herramientas { top: calc(86px * var(--esc)); right: 14px; padding: 6px; display: flex; gap: 5px; flex-wrap: wrap; justify-content: flex-end; }
+
+      /* reproducción */
+      #transporte { left: 50%; transform: translateX(-50%); bottom: 14px; padding: 9px 12px 10px; width: min(calc(760px * var(--esc)), calc(100vw - 28px)); }
+      #transporte .fila { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+      #transporte .sep { width: 1px; height: 22px; background: var(--borde); margin: 0 4px; }
+      #btn-play { min-width: calc(118px * var(--esc)); font-weight: 600; }
+      #barra { position: relative; height: 7px; background: rgba(255, 255, 255, 0.1); border-radius: 4px; margin-top: 9px; cursor: pointer; }
+      #barra-lleno { position: absolute; left: 0; top: 0; bottom: 0; background: var(--vino); border-radius: 4px; }
+      #barra-t { margin-left: auto; font-size: calc(12px * var(--esc)); color: var(--tenue); font-variant-numeric: tabular-nums; }
+
+      /* cámaras */
+      #camaras { left: 14px; bottom: 14px; padding: 8px; display: flex; flex-direction: column; gap: 5px; }
+      #camaras button { text-align: left; }
+
+      /* lista de escenas */
+      #panel-escenas { right: 14px; top: calc(132px * var(--esc)); bottom: 120px; width: min(calc(340px * var(--esc)), calc(100vw - 28px)); padding: 8px; overflow: auto; display: none; }
+      #panel-escenas.abierto { display: block; }
+      .lista-fase { margin: 8px 4px 4px; font-size: calc(11px * var(--esc)); font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #f0d6df; }
+      .lista-fase .prop { font-size: 0.85em; background: var(--vino); color: #fff; padding: 1px 5px; border-radius: 3px; margin-left: 4px; }
+      .lista-item { display: flex; gap: 8px; width: 100%; text-align: left; margin: 2px 0; align-items: baseline; }
+      .lista-item b { min-width: 1.6em; color: var(--tenue); }
+
+      #ficha { right: 14px; bottom: calc(118px * var(--esc)); width: min(360px, calc(100vw - 28px)); padding: 14px 16px; border-top: 3px solid var(--verde); }
+      #ficha h2 { margin: 0 0 6px; font-size: calc(15px * var(--esc)); }
+      #ficha p { margin: 0; font-size: calc(13px * var(--esc)); line-height: 1.45; color: #d4dad8; }
       #ficha-cerrar { position: absolute; top: 8px; right: 8px; padding: 2px 8px; }
-      #fps { position: fixed; right: 16px; top: 64px; font-size: 11px; color: var(--tenue); }
+      #fps { position: fixed; left: 16px; bottom: 4px; font-size: 10px; color: var(--tenue); }
       #carga { position: fixed; inset: 0; display: grid; place-items: center; background: #0d1112; z-index: 10; transition: opacity 0.6s; }
       #carga.oculto { opacity: 0; pointer-events: none; }
       #carga div { text-align: center; }
       #carga strong { display: block; font-size: 18px; margin-bottom: 8px; border-bottom: 3px solid var(--vino); padding-bottom: 8px; }
       #carga span { color: var(--tenue); font-size: 13px; }
       #etiquetas { position: fixed; inset: 0; pointer-events: none; overflow: hidden; }
-      .etiqueta { position: absolute; left: 0; top: 0; white-space: nowrap; font-size: 12px; font-weight: 600; color: #fff; background: rgba(14, 18, 20, 0.72); border-left: 3px solid var(--vino); padding: 3px 7px; border-radius: 4px; }
-      body.presentacion .etiqueta { font-size: 15px; }
+      .etiqueta { position: absolute; left: 0; top: 0; white-space: nowrap; font-size: calc(12px * var(--esc)); font-weight: 600; color: #fff; background: rgba(14, 18, 20, 0.72); border-left: 3px solid var(--vino); padding: 3px 7px; border-radius: 4px; }
+      body.presentacion { --esc: 1.3; }
       body.sin-ui .panel, body.sin-ui #fps { display: none !important; }
-      body.presentacion button { font-size: 16px; padding: 11px 16px; }
-      body.presentacion #titulo h1 { font-size: 19px; }
-      @media (max-width: 700px) {
-        #herramientas { top: auto; bottom: 14px; right: 14px; max-width: 50vw; }
-        #vistas { max-height: 40vh; }
+      body.solo-escena .panel:not(#escena-panel):not(#estado) { display: none !important; }
+      @media (max-width: 900px) {
+        #estado { top: auto; bottom: 150px; right: 14px; max-width: calc(100vw - 28px); }
+        #camaras { display: none; }
+        #herramientas { top: auto; bottom: 210px; }
       }
     </style>
   </head>
   <body>
     <canvas id="escena"></canvas>
-    <div id="titulo" class="panel">
-      <h1>Terminal ferroviaria de carga · Tren Maya</h1>
-      <p>Simulador visual 3D · Patio de operación</p>
+
+    <div id="escena-panel" class="panel">
+      <div class="cab"><span id="esc-fase"></span><span id="esc-prop" hidden>Proceso propuesto</span><span id="esc-paso"></span></div>
+      <div id="esc-actividad"></div>
+      <dl>
+        <dt>Puesto</dt><dd id="esc-puesto"></dd>
+        <dt>Tiempo estimado</dt><dd id="esc-tiempo"></dd>
+        <dt>Documento</dt><dd id="esc-doc"></dd>
+      </dl>
     </div>
+
+    <div id="estado" class="panel">
+      <div class="bloque"><span class="etq">Reloj de operación</span><span id="reloj">00:00:00</span><span id="hora"></span></div>
+      <div class="cont"><span class="etq">Recibidos</span><b><span id="c-recibidos">0</span><small>/33</small></b></div>
+      <div class="cont"><span class="etq">Pesados</span><b><span id="c-pesados">0</span><small>/33</small></b></div>
+      <div class="cont"><span class="etq">Cargados</span><b><span id="c-cargados">0</span><small>/33</small></b></div>
+      <div class="cont"><span class="etq">Despachados</span><b><span id="c-despachados">0</span><small>/33</small></b></div>
+    </div>
+
     <div id="herramientas" class="panel">
+      <button id="btn-escenas">Escenas</button>
+      <button id="btn-etiquetas" class="activo">Etiquetas</button>
       <button data-calidad="alta">Calidad alta</button>
       <button data-calidad="media">Calidad media</button>
-      <button id="btn-etiquetas" class="activo">Etiquetas</button>
       <button id="btn-captura">Captura</button>
       <button id="btn-pantalla">Presentación</button>
     </div>
+
+    <div id="panel-escenas" class="panel"><div id="lista-escenas"></div></div>
+
+    <div id="camaras" class="panel">
+      <span class="etq" style="padding: 2px 4px">Cámara</span>
+      <button data-cam="cine">Cinemática</button>
+      <button data-cam="dron">Vista aérea (dron)</button>
+      <button data-cam="seguir">Seguir el movimiento</button>
+      <button data-cam="via">Nivel de vía</button>
+      <button data-cam="libre">Libre</button>
+    </div>
+
+    <div id="transporte" class="panel">
+      <div class="fila">
+        <button id="btn-prev" title="Paso anterior">◀◀ Anterior</button>
+        <button id="btn-play">▶ Reproducir</button>
+        <button id="btn-next" title="Paso siguiente">Siguiente ▶▶</button>
+        <span class="sep"></span>
+        <span class="etq">Velocidad</span>
+        <button data-vel="1">×1</button>
+        <button data-vel="10">×10</button>
+        <button data-vel="50">×50</button>
+        <button data-vel="100">×100</button>
+        <span id="barra-t"></span>
+      </div>
+      <div id="barra"><div id="barra-lleno"></div></div>
+    </div>
+
     <div id="fps"></div>
-    <div id="vistas" class="panel"></div>
     <div id="ficha" class="panel" hidden>
       <button id="ficha-cerrar" aria-label="Cerrar">×</button>
       <h2 id="ficha-titulo"></h2>

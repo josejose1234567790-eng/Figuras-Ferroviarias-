@@ -82,7 +82,7 @@ function nearestS(track, p) {
 }
 
 // Analiza cada cambio: vía madre, desviada, separación lateral, sapo
-function analyse(to) {
+export function analyse(to) {
   const B = TRACKS.find((t) => t.id === to.track);
   const bp = (x) => {
     const q = pointAt(B, to.reverse ? B.length - x : x);

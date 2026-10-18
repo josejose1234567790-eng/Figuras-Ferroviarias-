@@ -5,6 +5,7 @@ export const INFO = {
   banderola: { titulo: "Banderola del cambio", texto: "Aparato de maniobra manual con palanca y candado. Su disco muestra a distancia la posición de las agujas." },
   tope: { titulo: "Tope de vía", texto: "Fin de vía con bastidor de acero y cabezal a la altura del enganche. Detiene el equipo que rebase el último punto de parada." },
   descarrilador: { titulo: "Descarrilador", texto: "Dispositivo que protege el fin de vía o la vía principal: si un carro rueda sin control, lo saca del riel en un punto seguro." },
+  senalSalida: { titulo: "Señal de salida", texto: "Señal de mástil para los trenes que salen hacia la vía principal: rojo (alto) o verde (vía libre) por autorización del jefe de patio." },
   senal: { titulo: "Señal de entrada", texto: "Señal de mástil con tres aspectos: verde (vía libre), amarillo (precaución, prepararse para detenerse) y rojo (alto absoluto)." },
   bascula: { titulo: "Báscula de vía", texto: "Plataforma de pesaje de 22 m en la vía de recibo, con caseta de operación e indicador digital visible desde la cabina. Paso máximo de 5 km/h." },
   combustible: { titulo: "Estación de combustible", texto: "Dos tanques horizontales de diésel dentro de un dique de contención de concreto, patín de bombas e isla de despacho junto a la vía de servicios." },
@@ -26,13 +27,13 @@ export const INFO = {
 
 // Funciones de cada puesto (fichas del personal)
 export const PUESTOS = {
-  jefe: "Dirige la operación del patio: autoriza movimientos, asigna vías y coordina por radio a tripulaciones y operadores.",
-  maquinista: "Conduce la locomotora respetando señales, velocidades del patio (máx. 10 km/h) y las órdenes del conductor.",
-  conductor: "Responsable del tren y de su documentación; guía los movimientos con señales manuales y por radio.",
-  inspector: "Revisa carros: ruedas, frenos, enganches, válvulas y sellos; reporta defectos antes de aceptar el tren.",
-  bascula: "Opera la báscula de vía y registra el peso de cada carro al paso de 5 km/h.",
-  llenadera: "Conecta tierra física, posiciona brazos y pasarelas y controla la carga de cada carro-tanque.",
-  combustible: "Despacha diésel a la locomotora en la isla de servicios y registra el volumen surtido.",
-  seguridad: "Vigila el uso de equipo de protección, permisos de trabajo y condiciones seguras en la llenadera.",
-  vigilante: "Controla el acceso de personas y vehículos a la terminal.",
+  jefe: "Dirige la operación del patio: asigna la vía de llegada, define la secuencia de movimientos y autoriza la salida.",
+  mayordomo: "Registra la llegada, verifica la cantidad de carros, clasifica según destino, notifica disponibilidad y cierra el registro.",
+  maqPatio: "Opera la locomotora de patio TMY 2008 en los movimientos de loteo, llenadera y formación del convoy (máx. 10 km/h).",
+  garPatio: "Alinea los herrajes con la banderola, guía los movimientos desde el estribo y acopla o desacopla los carros.",
+  inspector: "Inspector de unidades de arrastre: revisa daños, frenos, acopladores, sellos y válvulas con lista de verificación.",
+  bascula: "Opera la báscula de vía y concilia el peso de cada carro con la tarjeta de entrada (OD-14).",
+  maqCamino: "Conduce el tren de camino: lo posiciona en la vía de recibo y, ya cargado, lo saca de la terminal.",
+  garCamino: "Desacopla y acopla la locomotora de camino: cierra o abre las llaves angulares y levanta el perno del enganche.",
+  llenadera: "Conecta tierra física, baja pasarelas y brazos, controla la carga y coloca sellos en domo y válvulas.",
 };

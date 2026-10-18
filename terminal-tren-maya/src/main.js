@@ -10,6 +10,10 @@ import { setAnisotropy } from "./textures.js";
 import { INFO, PUESTOS } from "./info.js";
 import { buildFleet } from "./consist.js";
 import { buildPeople, Labels } from "./people.js";
+import { buildScript } from "./guion.js";
+import { Director } from "./director.js";
+import { evalScene, vehPose } from "./scenario.js";
+import { buildUI } from "./ui.js";
 import { Exhaust } from "./smoke.js";
 import { RAIL_TOP } from "./layout.js";
 
@@ -76,15 +80,13 @@ async function start() {
   progress("Personal…");
   await tick();
   const labels = new Labels(document.body);
-  const personal = buildPeople(scene, labels, { RAIL_TOP, deckY: RAIL_TOP + 4.25 + 0.025 });
-  const humo = [new Exhaust(scene, equipo.loco, equipo.types.LOCO.stack, { rate: 1 }), new Exhaust(scene, equipo.yard, equipo.types.LOCO.stack, { rate: 0.6 })];
-  for (let i = 0; i < 180; i++) humo.forEach((h) => h.update(1 / 30));
+  const personal = buildPeople(scene, labels);
+  const humo = { [equipo.loco.id]: new Exhaust(scene, equipo.loco, equipo.types.LOCO.stack, { rate: 1 }), [equipo.yard.id]: new Exhaust(scene, equipo.yard, equipo.types.LOCO.stack, { rate: 0.6 }) };
   const occluders = [equipo.fleet.group];
-  const animate = (dt) => {
-    personal.update(dt);
-    humo.forEach((h) => h.update(dt));
-    equipo.fleet.update();
-  };
+
+  progress("Guion de la operación (19 escenas)…");
+  await tick();
+  const scenes = buildScript(equipo);
 
   progress("Selva baja y vegetación…");
   await tick();
@@ -101,7 +103,20 @@ async function start() {
   controls.maxDistance = 2500;
   controls.screenSpacePanning = false;
 
-  // Vistas de cámara (focales en mm sobre sensor de 36 mm)
+  const byId = {};
+  for (const v of equipo.fleet.vehicles) byId[v.id] = v;
+  const director = new Director({ scenes, fleet: equipo.fleet, byId, people: personal.people, turnouts: track.turnouts, refs: facilities.userData.refs, smokes: humo, camera, controls, post, quality: () => quality });
+  director.update(0);
+  for (let i = 0; i < 150; i++) Object.values(humo).forEach((h) => h.update(1 / 30));
+  const uiTick = buildUI(director);
+  controls.addEventListener("start", () => {
+    if (director.mode !== "libre") {
+      director.mode = "libre";
+      director.emit();
+    }
+  });
+
+  // Vistas fijas de cámara (focales en mm sobre sensor de 36 mm) para revisión y capturas
   const VIEWS = {
     dron: { pos: [-820, 210, 300], target: [-240, 0, -10], f: 28, nombre: "Dron: vista general" },
     entrada: { pos: [-905, 5.5, 14], target: [-700, 2, -4], f: 50, nombre: "Entrada y señal de mástil" },
@@ -117,6 +132,7 @@ async function start() {
   const setView = (name, instant = true) => {
     const v = VIEWS[name];
     if (!v) return;
+    director.mode = "libre";
     if (instant) {
       camera.position.set(...v.pos);
       controls.target.set(...v.target);
@@ -129,14 +145,7 @@ async function start() {
     document.querySelectorAll("[data-vista]").forEach((b) => b.classList.toggle("activo", b.dataset.vista === name));
   };
 
-  const vistas = $("#vistas");
-  for (const [k, v] of Object.entries(VIEWS)) {
-    const b = document.createElement("button");
-    b.textContent = v.nombre;
-    b.dataset.vista = k;
-    b.onclick = () => setView(k, false);
-    vistas.appendChild(b);
-  }
+
 
   const resize = () => {
     camera.aspect = innerWidth / innerHeight;
@@ -254,7 +263,9 @@ async function start() {
   });
   $("#ficha-cerrar").onclick = () => ($("#ficha").hidden = true);
 
-  setView(params.get("vista") || "dron");
+  if (params.get("vista")) setView(params.get("vista"));
+  if (params.get("escena")) director.seek(Number(params.get("escena")) - 1, Number(params.get("t") || 0));
+  director.snap = true;
   applyQuality();
   setupMaterials(scene, csm);
 
@@ -273,8 +284,9 @@ async function start() {
       camera.setFocalLength(anim.from.f + (anim.to.f - anim.from.f) * k);
       if (anim.t >= 1) anim = null;
     }
-    animate(dt);
-    controls.update();
+    director.update(dt);
+    uiTick();
+    if (director.mode === "libre") controls.update();
     labels.update(camera, occluders);
     const gy = heightAt(camera.position.x, camera.position.z) + 1.2;
     if (camera.position.y < gy) camera.position.y = gy;
@@ -297,8 +309,9 @@ async function start() {
   if (params.get("captura")) {
     // modo de captura: sólo dibuja cuando se pide (navegadores sin GPU)
     window.TM_RENDER = (dt = 0) => {
-      if (dt) animate(dt);
-      controls.update();
+      director.update(dt);
+      uiTick();
+      if (director.mode === "libre") controls.update();
       labels.forceOcclusion = true;
       labels.update(camera, occluders);
       csm.update();
@@ -310,7 +323,7 @@ async function start() {
 
   occluders.push(facilities);
   labels.forceOcclusion = true;
-  window.TM = { personal, labels, equipo, THREE, scene, camera, controls, renderer, setView, screenshot, VIEWS, csm, post, facilities, track, ready: true };
+  window.TM = { evalScene, vehPose, director, scenes, personal, labels, equipo, THREE, scene, camera, controls, renderer, setView, screenshot, VIEWS, csm, post, facilities, track, ready: true };
 }
 
 start().catch((e) => {
