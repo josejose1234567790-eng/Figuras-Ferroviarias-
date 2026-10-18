@@ -37,6 +37,9 @@
       #carga div { text-align: center; }
       #carga strong { display: block; font-size: 18px; margin-bottom: 8px; border-bottom: 3px solid var(--vino); padding-bottom: 8px; }
       #carga span { color: var(--tenue); font-size: 13px; }
+      #etiquetas { position: fixed; inset: 0; pointer-events: none; overflow: hidden; }
+      .etiqueta { position: absolute; left: 0; top: 0; white-space: nowrap; font-size: 12px; font-weight: 600; color: #fff; background: rgba(14, 18, 20, 0.72); border-left: 3px solid var(--vino); padding: 3px 7px; border-radius: 4px; }
+      body.presentacion .etiqueta { font-size: 15px; }
       body.sin-ui .panel, body.sin-ui #fps { display: none !important; }
       body.presentacion button { font-size: 16px; padding: 11px 16px; }
       body.presentacion #titulo h1 { font-size: 19px; }
@@ -55,6 +58,7 @@
     <div id="herramientas" class="panel">
       <button data-calidad="alta">Calidad alta</button>
       <button data-calidad="media">Calidad media</button>
+      <button id="btn-etiquetas" class="activo">Etiquetas</button>
       <button id="btn-captura">Captura</button>
       <button id="btn-pantalla">Presentación</button>
     </div>

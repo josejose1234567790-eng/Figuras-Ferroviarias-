@@ -16,7 +16,8 @@ Carpeta portátil: funciona sin internet.
 
 ## Estado
 - Etapa 1 (patio estático): vías, cambios, balasto, terreno, selva baja, instalaciones, cielo, sombras y posproceso.
-- Etapas siguientes: equipo rodante, personal, animación de fases y guion completo.
+- Etapa 2 (equipo y personal): GE ES44AC TMY 2002 y TMY 2008, tren de 33 carros-tanque DOT-117 (TMY 200101–200133, UN 1203), furgones, góndolas y tolvas de fondo; bogíes que pivotan, ruedas que giran, suspensión según carga y humo de escape; 10 figuras del personal con 9 puestos y etiquetas flotantes (botón «Etiquetas»).
+- Etapas siguientes: animación de las fases, guion de 19 escenas, interfaz y cinemáticas.
 
 ## Desarrollo
 Código en `src/`. Para regenerar `app.js`:

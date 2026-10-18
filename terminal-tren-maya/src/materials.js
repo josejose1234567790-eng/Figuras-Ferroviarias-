@@ -79,7 +79,7 @@ export function M() {
     darkSteel: dust(steel("#3b3d3f", { seed: 4, grime: 0.5 }), { height: 1.0, amount: 0.45 }),
     structure: dust(steel("#8a9093", { seed: 11, grime: 0.4, rough: 0.7, metal: 0.3 }), { height: 1.2, amount: 0.5 }),
     galv: dust(std({ color: 0x9fa4a6, metalness: 0.85, roughness: 0.48, map: T.paint("#d8dbdc", { seed: 9, grime: 0.25 }).map }), { height: 0.9, amount: 0.35 }),
-    yellow: dust(steel("#e0a913", { seed: 5, grime: 0.3, rough: 0.6, metal: 0.2 }), { height: 0.9, amount: 0.4 }),
+    yellow: dust(steel("#ecc61c", { seed: 5, grime: 0.3, rough: 0.6, metal: 0.1 }), { height: 0.9, amount: 0.4 }),
     red: steel("#a3201d", { seed: 6, grime: 0.25, rough: 0.55, metal: 0.15 }),
     green: steel("#155b4e", { seed: 7, grime: 0.25, rough: 0.6, metal: 0.2 }),
     white: steel("#e9e8e2", { seed: 8, grime: 0.3, rough: 0.7, metal: 0.05 }),

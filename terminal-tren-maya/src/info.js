@@ -16,5 +16,23 @@ export const INFO = {
   torre: { titulo: "Torre de iluminación", texto: "Torre de celosía de 30 m con reflectores para la operación nocturna del patio." },
   cerca: { titulo: "Cerca perimetral", texto: "Malla ciclónica con alambre de púas. Acceso único controlado por la caseta de vigilancia." },
   postes: { titulo: "Línea de energía", texto: "Postes de concreto con línea de media tensión que alimenta la terminal." },
+  es44ac: { titulo: "Locomotora GE ES44AC", texto: "Diésel-eléctrica de 4,400 hp con tracción de corriente alterna, bogíes de tres ejes. Largo 22.3 m, alto 4.7 m, ancho 3.1 m. Librea azul petróleo con franja dorada." },
+  dot117: { titulo: "Carro-tanque DOT-117", texto: "Carro para líquidos inflamables (UN 1203, gasolina): tanque con chaqueta térmica, escudos de cabeza completos y caja protectora de accesorios superiores. Largo 18.2 m; la suspensión baja ligeramente cuando va cargado." },
+  furgon: { titulo: "Furgón", texto: "Carro cerrado con puerta corrediza para carga general protegida de la intemperie." },
+  gondola: { titulo: "Góndola", texto: "Carro abierto de costados bajos; aquí cargado con balasto para mantenimiento de vía." },
+  tolva: { titulo: "Tolva cubierta", texto: "Carro de tres tolvas con descarga por gravedad para granos o cemento." },
   selva: { titulo: "Selva baja caducifolia", texto: "Vegetación característica del norte de la península de Yucatán; en temporada de secas muchos árboles pierden el follaje." },
+};
+
+// Funciones de cada puesto (fichas del personal)
+export const PUESTOS = {
+  jefe: "Dirige la operación del patio: autoriza movimientos, asigna vías y coordina por radio a tripulaciones y operadores.",
+  maquinista: "Conduce la locomotora respetando señales, velocidades del patio (máx. 10 km/h) y las órdenes del conductor.",
+  conductor: "Responsable del tren y de su documentación; guía los movimientos con señales manuales y por radio.",
+  inspector: "Revisa carros: ruedas, frenos, enganches, válvulas y sellos; reporta defectos antes de aceptar el tren.",
+  bascula: "Opera la báscula de vía y registra el peso de cada carro al paso de 5 km/h.",
+  llenadera: "Conecta tierra física, posiciona brazos y pasarelas y controla la carga de cada carro-tanque.",
+  combustible: "Despacha diésel a la locomotora en la isla de servicios y registra el volumen surtido.",
+  seguridad: "Vigila el uso de equipo de protección, permisos de trabajo y condiciones seguras en la llenadera.",
+  vigilante: "Controla el acceso de personas y vehículos a la terminal.",
 };

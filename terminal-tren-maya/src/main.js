@@ -7,7 +7,11 @@ import { buildTrack } from "./track.js";
 import { buildVegetation, WIND } from "./vegetation.js";
 import { buildFacilities } from "./buildings.js";
 import { setAnisotropy } from "./textures.js";
-import { INFO } from "./info.js";
+import { INFO, PUESTOS } from "./info.js";
+import { buildFleet } from "./consist.js";
+import { buildPeople, Labels } from "./people.js";
+import { Exhaust } from "./smoke.js";
+import { RAIL_TOP } from "./layout.js";
 
 const $ = (s) => document.querySelector(s);
 const params = new URLSearchParams(location.search);
@@ -64,6 +68,23 @@ async function start() {
   progress("Instalaciones del patio…");
   await tick();
   const facilities = buildFacilities(scene);
+
+  progress("Equipo rodante…");
+  await tick();
+  const equipo = buildFleet(scene);
+
+  progress("Personal…");
+  await tick();
+  const labels = new Labels(document.body);
+  const personal = buildPeople(scene, labels, { RAIL_TOP, deckY: RAIL_TOP + 4.25 + 0.025 });
+  const humo = [new Exhaust(scene, equipo.loco, equipo.types.LOCO.stack, { rate: 1 }), new Exhaust(scene, equipo.yard, equipo.types.LOCO.stack, { rate: 0.6 })];
+  for (let i = 0; i < 180; i++) humo.forEach((h) => h.update(1 / 30));
+  const occluders = [equipo.fleet.group];
+  const animate = (dt) => {
+    personal.update(dt);
+    humo.forEach((h) => h.update(dt));
+    equipo.fleet.update();
+  };
 
   progress("Selva baja y vegetación…");
   await tick();
@@ -174,6 +195,10 @@ async function start() {
     return url;
   };
   $("#btn-captura").onclick = () => screenshot(2);
+  $("#btn-etiquetas").onclick = (e) => {
+    labels.visible = !labels.visible;
+    e.currentTarget.classList.toggle("activo", labels.visible);
+  };
   $("#btn-pantalla").onclick = () => {
     if (document.fullscreenElement) document.exitFullscreen();
     else document.documentElement.requestFullscreen?.();
@@ -182,7 +207,7 @@ async function start() {
 
   // Ficha informativa al hacer clic
   const ray = new THREE.Raycaster();
-  const pickables = [facilities, track.group];
+  const pickables = [facilities, track.group, equipo.fleet.group, personal.group];
   let down = null;
   canvas.addEventListener("pointerdown", (e) => (down = [e.clientX, e.clientY]));
   canvas.addEventListener("pointerup", (e) => {
@@ -191,7 +216,23 @@ async function start() {
     ray.setFromCamera(p, camera);
     const hits = ray.intersectObjects(pickables, true);
     let key = null;
+    const card = $("#ficha");
+    card.dataset.extra = "";
     for (const h of hits) {
+      let po = h.object;
+      while (po && !po.userData.person) po = po.parent;
+      if (po) {
+        key = "persona";
+        card.dataset.extra = "";
+        INFO.persona = { titulo: po.userData.person.nombre, texto: PUESTOS[po.userData.person.role] || "" };
+        break;
+      }
+      const veh = equipo.fleet.vehicleFromHit(h);
+      if (veh) {
+        key = veh.type.info;
+        card.dataset.extra = veh.id;
+        break;
+      }
       let o = h.object;
       while (o && !o.userData.info) o = o.parent;
       if (o) {
@@ -203,12 +244,11 @@ async function start() {
         break;
       }
     }
-    const card = $("#ficha");
     if (!key || !INFO[key]) {
       card.hidden = true;
       return;
     }
-    $("#ficha-titulo").textContent = INFO[key].titulo;
+    $("#ficha-titulo").textContent = INFO[key].titulo + (card.dataset.extra ? ` · ${card.dataset.extra}` : "");
     $("#ficha-texto").textContent = INFO[key].texto;
     card.hidden = false;
   });
@@ -233,7 +273,9 @@ async function start() {
       camera.setFocalLength(anim.from.f + (anim.to.f - anim.from.f) * k);
       if (anim.t >= 1) anim = null;
     }
+    animate(dt);
     controls.update();
+    labels.update(camera, occluders);
     const gy = heightAt(camera.position.x, camera.position.z) + 1.2;
     if (camera.position.y < gy) camera.position.y = gy;
     csm.update();
@@ -254,8 +296,11 @@ async function start() {
   if (params.get("sinui")) document.body.classList.add("sin-ui");
   if (params.get("captura")) {
     // modo de captura: sólo dibuja cuando se pide (navegadores sin GPU)
-    window.TM_RENDER = () => {
+    window.TM_RENDER = (dt = 0) => {
+      if (dt) animate(dt);
       controls.update();
+      labels.forceOcclusion = true;
+      labels.update(camera, occluders);
       csm.update();
       post.composer.render();
     };
@@ -263,7 +308,9 @@ async function start() {
   } else loop();
   progress("Listo");
 
-  window.TM = { THREE, scene, camera, controls, renderer, setView, screenshot, VIEWS, csm, post, facilities, track, ready: true };
+  occluders.push(facilities);
+  labels.forceOcclusion = true;
+  window.TM = { personal, labels, equipo, THREE, scene, camera, controls, renderer, setView, screenshot, VIEWS, csm, post, facilities, track, ready: true };
 }
 
 start().catch((e) => {
