@@ -105,7 +105,7 @@ function mats() {
   const pBlack = TX.paint("#17191a", { seed: 31, grime: 0.55 });
   const pBlue = TX.paint("#1f6479", { seed: 32, grime: 0.3 });
   const pRed = TX.paint("#6e2a20", { seed: 33, grime: 0.55 });
-  const pGrey = TX.paint("#a6a7a2", { seed: 34, grime: 0.55 });
+  const pGrey = TX.paint("#e2e1da", { seed: 34, grime: 0.55 });
   const pGold = TX.paint("#d8b450", { seed: 35, grime: 0.25 });
   MM = {
     tank: dust(std({ map: pBlack.map, roughnessMap: pBlack.rough, roughness: 0.75, metalness: 0.25 }), { height: 1.6, amount: 0.55 }),
@@ -127,6 +127,8 @@ function mats() {
     redLens: std({ color: 0x8a0d0d, emissive: 0x6a0000, emissiveIntensity: 0.3, roughness: 0.2 }),
     ballastLoad: std({ map: TX.ballast().map, normalMap: TX.ballast().normal, roughness: 0.95 }),
     galv: m.galv,
+    hand: dust(std({ map: TX.paint("#efefea", { seed: 36, grime: 0.3 }).map, roughness: 0.5, metalness: 0.1 }), { height: 1.2, amount: 0.35 }),
+    reflect: std({ map: null, color: 0xf2c400, roughness: 0.3, metalness: 0, emissive: 0x2a2000, emissiveIntensity: 1 }),
   };
   return MM;
 }
@@ -301,6 +303,14 @@ function canvasTex(w, h, fn, { srgb = true, bleedIt = true } = {}) {
   const t = bleedIt ? TX.bleed(c) : TX.tex(c, { srgb });
   t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping;
   return t;
+}
+
+function reflectTexture() {
+  return canvasTex(1024, 16, (g) => {
+    g.clearRect(0, 0, 1024, 16);
+    g.fillStyle = "#f2c400";
+    for (let x = 6; x < 1024; x += 73) g.fillRect(x, 0, 30, 16);
+  });
 }
 
 function placardTexture() {
@@ -482,6 +492,9 @@ export function tankCarType(atlas) {
     P.add("body", mm.letters, cylPatch(R + 0.008, yC, -5.0, 5.0, -0.6, 0.9, s), { cast: false });
     for (const x of [-6.2, 6.2]) P.add("body", mm.placard, plane(0.3, 0.3, x, yC + 0.1, s * (R + 0.012), s > 0 ? 0 : Math.PI));
   }
+  // franjas reflejantes amarillas
+  mm.reflectStripe = mm.reflectStripe || std({ map: reflectTexture(), alphaTest: 0.4, color: 0xffffff, roughness: 0.3, emissive: 0x3a2c00, emissiveMap: reflectTexture(), emissiveIntensity: 0.6, polygonOffset: true, polygonOffsetFactor: -2 });
+  for (const s of [-1, 1]) P.add("body", mm.reflectStripe, cylPatch(R + 0.009, yC, -7.0, 7.0, -0.9, -0.84, s, 1), { cast: false });
   // número económico individual (atlas)
   const num = slotMaterial(atlas, { color: 0xe9e7df });
   for (const s of [-1, 1]) P.add("body", num, cylPatch(R + 0.01, yC, s > 0 ? -6.8 : 2.8, s > 0 ? -2.8 : 6.8, -0.75, -0.35, s), { slot: true, cast: false });
@@ -493,6 +506,27 @@ export function tankCarType(atlas) {
 }
 
 // ---------- GE ES44AC
+function cabLogoTexture() {
+  return canvasTex(256, 256, (g) => {
+    g.clearRect(0, 0, 256, 256);
+    g.strokeStyle = "#dcb858";
+    g.lineWidth = 9;
+    g.beginPath();
+    g.arc(128, 128, 112, 0, Math.PI * 2);
+    g.stroke();
+    g.lineWidth = 3;
+    g.beginPath();
+    g.arc(128, 128, 96, 0, Math.PI * 2);
+    g.stroke();
+    g.fillStyle = "#dcb858";
+    g.textAlign = "center";
+    g.textBaseline = "middle";
+    g.font = "bold 40px Arial";
+    g.fillText("DEFENSA", 128, 120);
+    g.font = "bold 19px Arial";
+    g.fillText("TREN MAYA", 128, 162);
+  });
+}
 function locoLiveryTexture() {
   // costado del cofre largo: franja dorada, letreros y juntas de puertas
   return canvasTex(4096, 640, (g, w, h) => {
@@ -581,19 +615,19 @@ export function locoType(atlas) {
       // escalones de esquina
       for (let k = 0; k < 3; k++) P.add("body", mm.grating, G.box(0.55, 0.03, 0.3, x - e * 0.55, 0.45 + k * 0.38, s * 1.38, { r: 0 }));
       P.add("body", mm.black, G.box(0.6, 1.25, 0.03, x - e * 0.55, 0.45, s * 1.54, { r: 0 }));
-      P.add("body", mm.yellow, G.rod([x - e * 0.25, 0.5, s * 1.56], [x - e * 0.25, yD + 1.0, s * 1.56], 0.02));
-      P.add("body", mm.yellow, G.rod([x - e * 0.85, 0.5, s * 1.56], [x - e * 0.85, yD + 1.0, s * 1.56], 0.02));
+      P.add("body", mm.hand, G.rod([x - e * 0.25, 0.5, s * 1.56], [x - e * 0.25, yD + 1.0, s * 1.56], 0.02));
+      P.add("body", mm.hand, G.rod([x - e * 0.85, 0.5, s * 1.56], [x - e * 0.85, yD + 1.0, s * 1.56], 0.02));
       // luces de cuneta
       P.add("body", mm.black, G.box(0.14, 0.18, 0.18, x + e * 0.05, yD + 0.05, s * 1.2, { r: 0.02 }));
       P.add("body", mm.lamp, G.cylX(0.065, 0.02, x + e * 0.13, yD + 0.05, s * 1.2, 16));
     }
     coupler(P, mm, e * H, e);
     // barandal transversal del extremo
-    for (const g of G.rail([[x - e * 0.15, yD, -1.45], [x - e * 0.15, yD, -0.45]], 1.0, 0.8)) P.add("body", mm.yellow, g);
-    for (const g of G.rail([[x - e * 0.15, yD, 0.45], [x - e * 0.15, yD, 1.45]], 1.0, 0.8)) P.add("body", mm.yellow, g);
+    for (const g of G.rail([[x - e * 0.15, yD, -1.45], [x - e * 0.15, yD, -0.45]], 1.0, 0.8)) P.add("body", mm.hand, g);
+    for (const g of G.rail([[x - e * 0.15, yD, 0.45], [x - e * 0.15, yD, 1.45]], 1.0, 0.8)) P.add("body", mm.hand, g);
   }
   // barandales del andador
-  for (const s of [-1, 1]) for (const g of G.rail([[-H + 0.8, yD, s * 1.48], [5.9, yD, s * 1.48]], 1.0, 1.6)) P.add("body", mm.yellow, g);
+  for (const s of [-1, 1]) for (const g of G.rail([[-H + 0.8, yD, s * 1.48], [5.9, yD, s * 1.48]], 1.0, 1.6)) P.add("body", mm.hand, g);
   // cabina (x 6.0 a 9.35) y nariz
   const cab0 = 6.0;
   const cab1 = 9.35;
@@ -670,6 +704,14 @@ export function locoType(atlas) {
   const num = slotMaterial(atlas, { color: 0xf2efe6 });
   for (const s of [-1, 1]) P.add("body", num, plane(2.2, 0.36, (cab0 + cab1) / 2, yD + 0.5, s * 1.535, s > 0 ? 0 : Math.PI), { slot: true, cast: false });
   P.add("body", num, plane(1.6, 0.26, cab1 + 1.285, yD + 0.45, 0, Math.PI / 2), { slot: true, cast: false });
+  // tableros de número iluminados en el techo de la cabina (frente)
+  for (const z of [-0.85, 0.85]) {
+    P.add("body", mm.black, G.box(0.12, 0.26, 0.9, cab1 + 0.08, 4.18, z, { r: 0.02 }));
+    P.add("body", mm.boards || (mm.boards = slotMaterial(atlas, { color: 0x111111, emissive: 0xfff4dc, emissiveIntensity: 0.25 })), plane(0.82, 0.2, cab1 + 0.145, 4.18, z, Math.PI / 2), { slot: true, cast: false });
+  }
+  // logotipo de Defensa en el costado de la cabina
+  mm.cabLogo = mm.cabLogo || std({ map: cabLogoTexture(), alphaTest: 0.4, roughness: 0.45, metalness: 0.3, polygonOffset: true, polygonOffsetFactor: -2 });
+  for (const s of [-1, 1]) P.add("body", mm.cabLogo, plane(0.9, 0.9, cab0 + 0.65, yD + 1.6, s * 1.536, s > 0 ? 0 : Math.PI), { cast: false });
   locoTruck(P, mm);
   const wsx = wheelset(0.533, { journal: 1.05 });
   for (const g of wsx.body) P.add("axle", mm.wheel, g);
