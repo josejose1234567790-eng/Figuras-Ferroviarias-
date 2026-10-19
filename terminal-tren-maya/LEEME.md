@@ -29,3 +29,9 @@ npm install
 node build.mjs
 ```
 three.js 0.186.1 empaquetado con esbuild en un solo script clásico (sin módulos ni CDN).
+
+`texturas.js` guarda las texturas procedurales ya calculadas (piedra, follaje, terreno, orilla de selva) para que el arranque tarde segundos en lugar de casi un minuto. Si se modifica el código de las texturas, se regenera con:
+```
+node tools/hornear.mjs
+```
+(requiere Playwright con Chromium). Si `texturas.js` falta, el simulador funciona igual pero las genera al abrir.

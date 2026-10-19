@@ -140,21 +140,120 @@ export function bleed(c) {
       out[o + 2] = has ? rgb[i * 3 + 2] : avg[2];
       out[o + 3] = a[i];
     }
+  return dataTex(out, w, h);
+}
+
+function dataTex(out, w, h, srgb = true) {
   const t = new THREE.DataTexture(out, w, h, THREE.RGBAFormat);
-  t.colorSpace = THREE.SRGBColorSpace;
+  t.colorSpace = srgb ? THREE.SRGBColorSpace : THREE.NoColorSpace;
   t.wrapS = t.wrapT = THREE.RepeatWrapping;
   t.generateMipmaps = true;
   t.minFilter = THREE.LinearMipmapLinearFilter;
   t.magFilter = THREE.LinearFilter;
   t.anisotropy = ANISO;
   t.needsUpdate = true;
-  t.userData.canvas = c;
   return t;
 }
 
+// ---------- texturas precalculadas (texturas.js): evitan generar todo en cada arranque
+let BAKED = null;
+const loadImg = async (url) => {
+  const im = new Image();
+  im.src = url;
+  await im.decode();
+  const c = canvas(im.width, im.height);
+  c.getContext("2d").drawImage(im, 0, 0);
+  return c;
+};
+async function des(e) {
+  if (e && e.$t) {
+    let t;
+    if (e.d) {
+      const [c1, c2] = await Promise.all([loadImg(e.rgb), loadImg(e.a)]);
+      const d1 = c1.getContext("2d").getImageData(0, 0, e.w, e.h).data;
+      const d2 = c2.getContext("2d").getImageData(0, 0, e.w, e.h).data;
+      const out = new Uint8Array(e.w * e.h * 4);
+      for (let i = 0; i < e.w * e.h; i++) {
+        out[i * 4] = d1[i * 4];
+        out[i * 4 + 1] = d1[i * 4 + 1];
+        out[i * 4 + 2] = d1[i * 4 + 2];
+        out[i * 4 + 3] = d2[i * 4];
+      }
+      t = dataTex(out, e.w, e.h, e.srgb);
+    } else t = tex(await loadImg(e.img), { srgb: e.srgb });
+    t.repeat.set(e.rep[0], e.rep[1]);
+    if (!e.wrap) t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping;
+    return t;
+  }
+  if (e && e.$c) return loadImg(e.$c);
+  if (e && typeof e === "object") {
+    const o = {};
+    await Promise.all(Object.keys(e).map(async (k) => (o[k] = await des(e[k]))));
+    return o;
+  }
+  return e;
+}
+export async function loadBaked(progress) {
+  const src = typeof window !== "undefined" && window.TM_TEXTURAS;
+  if (!src) return false;
+  BAKED = {};
+  const keys = Object.keys(src);
+  let n = 0;
+  await Promise.all(
+    keys.map(async (k) => {
+      BAKED[k] = await des(src[k]);
+      n++;
+      if (progress && n % 8 === 0) progress(`Texturas ${n}/${keys.length}…`);
+    }),
+  );
+  return true;
+}
+function ser(v) {
+  if (v && v.isTexture) {
+    const base = { $t: 1, srgb: v.colorSpace === THREE.SRGBColorSpace, rep: [v.repeat.x, v.repeat.y], wrap: v.wrapS === THREE.ClampToEdgeWrapping ? 0 : 1 };
+    if (v.isDataTexture) {
+      const { data, width: w, height: h } = v.image;
+      const c1 = canvas(w, h);
+      const c2 = canvas(w, h);
+      const i1 = c1.getContext("2d").createImageData(w, h);
+      const i2 = c2.getContext("2d").createImageData(w, h);
+      for (let i = 0; i < w * h; i++) {
+        i1.data[i * 4] = data[i * 4];
+        i1.data[i * 4 + 1] = data[i * 4 + 1];
+        i1.data[i * 4 + 2] = data[i * 4 + 2];
+        i1.data[i * 4 + 3] = 255;
+        i2.data[i * 4] = i2.data[i * 4 + 1] = i2.data[i * 4 + 2] = data[i * 4 + 3];
+        i2.data[i * 4 + 3] = 255;
+      }
+      c1.getContext("2d").putImageData(i1, 0, 0);
+      c2.getContext("2d").putImageData(i2, 0, 0);
+      return { ...base, d: 1, w, h, rgb: c1.toDataURL("image/jpeg", 0.92), a: c2.toDataURL("image/png") };
+    }
+    return { ...base, img: v.image.toDataURL("image/jpeg", 0.93) };
+  }
+  if (typeof HTMLCanvasElement !== "undefined" && v instanceof HTMLCanvasElement) return { $c: v.toDataURL("image/png") };
+  if (v && typeof v === "object") {
+    const o = {};
+    for (const k in v) o[k] = ser(v[k]);
+    return o;
+  }
+  return v;
+}
+export function bakeAll() {
+  const out = {};
+  for (const [k, v] of cache) out[k] = ser(v);
+  return "window.TM_TEXTURAS = " + JSON.stringify(out) + ";\n";
+}
+
 const cache = new Map();
-function once(key, make) {
-  if (!cache.has(key)) cache.set(key, make());
+export const TEXTIME = {};
+export function once(key, make) {
+  if (!cache.has(key) && BAKED && BAKED[key] !== undefined) cache.set(key, BAKED[key]);
+  if (!cache.has(key)) {
+    const t0 = performance.now();
+    cache.set(key, make());
+    TEXTIME[key] = performance.now() - t0;
+  }
   return cache.get(key);
 }
 

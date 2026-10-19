@@ -133,7 +133,7 @@ function paintSplat() {
 }
 
 export function buildTerrain(scene) {
-  const splatCanvas = paintSplat();
+  const splatCanvas = TX.once("splat", paintSplat);
   const splatCtx = splatCanvas.getContext("2d");
   const splatData = splatCtx.getImageData(0, 0, SPLAT.size, SPLAT.size).data;
   const splatTex = TX.tex(splatCanvas, { srgb: false });

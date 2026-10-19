@@ -6,7 +6,7 @@ import { buildTerrain, buildCanopy, heightAt } from "./terrain.js";
 import { buildTrack } from "./track.js";
 import { buildVegetation, WIND } from "./vegetation.js";
 import { buildFacilities } from "./buildings.js";
-import { setAnisotropy } from "./textures.js";
+import { setAnisotropy, TEXTIME, loadBaked, bakeAll } from "./textures.js";
 import { INFO, PUESTOS } from "./info.js";
 import { buildFleet } from "./consist.js";
 import { buildPeople, Labels } from "./people.js";
@@ -55,6 +55,11 @@ async function start() {
   renderer.setPixelRatio(pr());
   renderer.setSize(innerWidth, innerHeight);
 
+  if (!params.has("hornear")) {
+    progress("Texturas…");
+    const ok = await loadBaked(progress);
+    console.log(ok ? "texturas precalculadas" : "texturas generadas en el arranque");
+  }
   progress("Cielo y luz de las 9:30 h…");
   await tick();
   createSky(scene, renderer);
@@ -323,7 +328,7 @@ async function start() {
 
   occluders.push(facilities);
   labels.forceOcclusion = true;
-  window.TM = { evalScene, vehPose, director, scenes, personal, labels, equipo, THREE, scene, camera, controls, renderer, setView, screenshot, VIEWS, csm, post, facilities, track, ready: true };
+  window.TM = { bakeAll, TEXTIME, evalScene, vehPose, director, scenes, personal, labels, equipo, THREE, scene, camera, controls, renderer, setView, screenshot, VIEWS, csm, post, facilities, track, ready: true };
 }
 
 start().catch((e) => {

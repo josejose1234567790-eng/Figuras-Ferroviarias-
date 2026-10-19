@@ -216,6 +216,9 @@ export function buildVegetation(scene, splatAt, quality) {
 
 // Orilla de la selva: lienzo con troncos, copas y sotobosque sobre una cinta alrededor del predio.
 function treeLineTexture(seed) {
+  return TX.once(`treeline${seed}`, () => treeLineMake(seed));
+}
+function treeLineMake(seed) {
   const W = 2048;
   const H = 512; // 64 m x 16 m (32 px/m)
   const c = document.createElement("canvas");

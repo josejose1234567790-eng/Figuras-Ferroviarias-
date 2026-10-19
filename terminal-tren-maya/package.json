@@ -2,6 +2,12 @@
   "name": "terminal-tren-maya",
   "private": true,
   "type": "module",
-  "scripts": { "build": "node build.mjs" },
-  "devDependencies": { "esbuild": "^0.28.0", "three": "0.186.1" }
+  "scripts": {
+    "build": "node build.mjs",
+    "hornear": "node tools/hornear.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.0",
+    "three": "0.186.1"
+  }
 }
